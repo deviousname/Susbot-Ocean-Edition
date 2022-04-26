@@ -45,7 +45,7 @@ driver = webdriver.Chrome(options=options)
 #and download geckodriver.exe from their official page for it:
 #https://github.com/mozilla/geckodriver/releases
 #and put the unzipped geckodriver.exe into the susbot folder next to chromedriver.exe
-#as long as your firefox and geckodriver matches it should work
+#as long as your firefox and geckodriver versions matches it should work
 
 #python socket.io stuff:
 sio = socketio.Client()
@@ -57,8 +57,6 @@ reddit = "yes" #yes/no...
 
 #map settings:
 board = 7 #this is the map number you want to play on
-#note: you will still have to go to that map in your main tab
-#after the bot has connected fully
 
 #BOT SPEED SETTINGS:
 slow_speed = 0.04 #seconds
