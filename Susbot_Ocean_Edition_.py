@@ -45,7 +45,6 @@ driver = webdriver.Chrome(options=options)
 #and download geckodriver.exe from their official page for it:
 #https://github.com/mozilla/geckodriver/releases
 #and put the unzipped geckodriver.exe into the susbot folder next to chromedriver.exe
-#and then put a # in front of the line below:
 #as long as your firefox and geckodriver matches it should work
 
 #python socket.io stuff:
