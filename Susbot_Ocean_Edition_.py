@@ -1,6 +1,6 @@
 #susbot
 
-#by deviousname.
+#by deviousname
 
 #GNU Affero General Public License v3.0
 '''Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications,
@@ -8,7 +8,6 @@ which include larger works using a licensed work, under the same license. Copyri
 Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network,
 the complete source code of the modified version must be made available.'''
 
-import crewmate #username/password goes in crewmate.py
 import requests
 import os
 import keyboard
@@ -45,18 +44,17 @@ driver = webdriver.Chrome(options=options)
 #and download geckodriver.exe from their official page for it:
 #https://github.com/mozilla/geckodriver/releases
 #and put the unzipped geckodriver.exe into the susbot folder next to chromedriver.exe
-#as long as your firefox and geckodriver versions matches it should work
+#and then put a # in front of the line below:
+#as long as your firefox and geckodriver matches it should work
 
 #python socket.io stuff:
 sio = socketio.Client()
 
-#OPTIONS:
-reddit = "yes" #yes/no...
-# if no then you must manually login to pixelplace
-# and then press F9 to connect
-
 #map settings:
-board = 7 #this is the map number you want to play on
+chart = 7 #this is the map number you want to play on
+#other maps: 53813
+#note: you will still have to go to that map in your main tab
+#after the bot has connected fully
 
 #BOT SPEED SETTINGS:
 slow_speed = 0.04 #seconds
@@ -111,13 +109,12 @@ paintz = ( #here is our list of pixel place colors
         )
 
 class Sus_Bot(): #---------Sus_Bot main class-----------
-    def __init__ (self, username, password): #lets setup the __init__ and load some future needed variables and fully load the bot:
-        print('̴ı̴̴̡̡̡ ̡͌l̡̡̡ ̡͌l̡*̡̡ ̴̡ı̴̴̡ ̡̡͡|̲̲̲͡͡͡ ̲▫̲͡ ̲̲̲͡͡π̲̲͡͡ ̲̲͡▫̲̲͡͡ ̲|̡̡̡ ̡ ̴̡ı̴̡̡ ̡͌l̡̡̡̡.')
+    def __init__ (self): #lets setup the __init__ and load some future needed variables and fully load the bot:
+        print('|̲̲̲͡͡͡ ̲▫̲͡ ̲̲̲͡͡π̲̲͡͡ ̲̲͡▫̲̲͡͡ ̲|')
         print('Welcome to SusBot')
         print('~Ꭿ~ꇺ~')
-        print('Please Stand By...')
         self.z = 1 #facing direction of ᎯmogsuS
-        print("Initiliazing variables...")
+        print("Building ship...")
         self.txty, self.bxby = None, None #For tree zone thing, and these equal None... for now...
         self.x, self.y = 0, 0 #player coordiantes
         self.lastx, self.lasty = self.x, self.y 
@@ -125,48 +122,71 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.logos = True
         self.zone_commands = False
         self.count = 0
-        self.numbers = 0
         self.exception = 0
-        self.color = 30
+        self.color = random.randint(0, 39)
         self.start = None
-        self.first = True
         self.get_7()#map
-        self.manualmsg = False
-        self.ate_cookies = False
-        self.open_treasure = None
-        print('Variables initiliazed.')
-        if reddit == "yes":
-            print('Logging into Reddit. Stand by.')
-            self.login()#login
-            print('Getting Cookies...')
-            self.auth_data()#cookies
-            print('Finalizing...')
-            self.visibility_state() #this checks the current tab you are on, and correctly sets the xpath stuff
+        self.authid= None
+        print('Ship construction complete.')
+        self.treasure = (random.randint(0, self.image.size[0]),random.randint(0, self.image.size[1]))
+        self.open_treasure = self.cache[self.treasure[0],self.treasure[1]]
+        print(f'Studying chart #{chart}.')
+        print(f'Possible treasure located: x:{self.treasure[0]}, y:{self.treasure[1]}')
+        print("Sailing...")
+        driver.get(f"https://pixelplace.io/{chart}")
+        width, height= pyautogui.size()
+        driver.set_window_position(int(width/3), 0, windowHandle='current')
+        while self.authid == None:
+            try:
+                self.auth_data()
+                print('Resupplied cookie stash.')
+                self.visibility_state()
+                print('Land ho!')
+            except:
+                print('Another week passes...')
+                time.sleep(7)
+                pass
+        if self.open_treasure == (204,204,204):
+            print('.,;,.but nothing was found.,:,.,.')
+            print('~S~u~m~m~e~r~~O~c~e~a~n~~D~a~y~s~')
+            time.sleep(3)
+        else:
+            print(f'You found {self.open_treasure}...!')
+            print('Hmmm, I wonder what that is?')
+            print('Maybe I can name it something?')
+            print(f'Oh, and the treasure also contained this old piece of parchment paper.')
+            print(f'There appears to be some writing on it...')
+            print('You translate the parchment:')
+            print('')
+            print(f'{random.choice(tips)}')
+            print('')
+            print("|̲̲̲͡͡͡ ̲▫̲͡ ~Ꭿ~ꇺ~̲̲̲͡͡π̲̲͡͡ ̲̲͡▫̲̲͡͡ ̲|")
+            time.sleep(5)
         self.hotkeys()#activate keybinds
         print('~~~~~ꇺ~~Ꭿ~~ඞ~~~~~')
         print('')
         print('SusBot is ready.')
         print('----CONTROLS----')
         print('')
-        print('d: Mongus')
-        print('e: Tree')
-        print('w: Water')        
+        print('w: Mongus')
+        print('d: Plant Tree')
+        #print('w: Water')        
         print('')
-        print('Shift+E: Mark top-left region.')
+        print('Shift+W: Mark top-left region.')
         print('Shift+D: Mark bottom-right region.')
         print('')
-        print('Shift R: Forest')
-        print('Shift W: Wave source - w again - to relocate Wave source')
-        print('Shift S: Ocean defense zone on equipped colors')
-        print('Shift A: Nature defense zone on equipped colors')
+        print('Shift R: Plant Forest in region (except for on equipped colors, browns, blues and greens)')
+        #print('Shift W: Wave source - w again - to relocate Wave source')
+        print('Shift S: Ocean defense zone on equipped colors (paints on equipped colors only)')
+        print('Shift A: Nature defense zone on equipped colors(paints on equipped colors only)')
         print("q: Stop.")
         print('')
-        print('Shift X: Toggle guild war logos on or off.')
+        print('Shift X: Toggle Guild War Logos on or off.')
         print('')
         print('1 through 9 and 0 keys:')
-        print('--- Will equip your selected color to the colorfilter list.')
+        print('--- Will equip your selected color.')
         print('')
-        print("Tilde ` or ~ will remove all equipped colors from the colorfilter list.")
+        print("Tilde ` or ~ will remove all equipped colors.")
         print("--- It's to the left of 1, above TAB")
         print('')
         print('ꇺᎯඞ')
@@ -177,14 +197,14 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
     #hotkey binds:
     def hotkeys(self):
         keyboard.on_press(self.onkeypress)#1-9 buttons equip currently selected colors
-        keyboard.add_hotkey("e", lambda: self.tree('single')) #tree
-        keyboard.add_hotkey("d", lambda: self.amogus("single", None, "na")) #sus
-        keyboard.add_hotkey('shift+e', lambda: self.zone('top left')) #mark top left corner of zone to bot for forest and tv
+        keyboard.add_hotkey("d", lambda: self.tree('single')) #tree
+        keyboard.add_hotkey("w", lambda: self.amogus("single", None, "na")) #sus
+        keyboard.add_hotkey('shift+w', lambda: self.zone('top left')) #mark top left corner of zone to bot for forest and tv
         keyboard.add_hotkey('shift+d', lambda: self.zone('bottom right')) #mark bottom right corner of zone to bot for forest and tv        
         keyboard.add_hotkey('shift+x', lambda: self.toggle_logos()) #toggle guild war logos on/off
         keyboard.add_hotkey('shift+r', lambda: self.forest())#forest of trees in zone area on equipped colors
-        keyboard.add_hotkey('w', lambda: self.wave_edit()) #splashes water around
-        keyboard.add_hotkey('shift+w', lambda: self.ocean()) #now we are getting serious
+        #keyboard.add_hotkey('', lambda: self.wave_edit()) #splashes water around #working on fixing bugs for this dont use yet- dev
+        #keyboard.add_hotkey('shift+', lambda: self.ocean()) #now we are getting serious #working on fixing bugs for this dont use yet- dev
         keyboard.add_hotkey('shift+s', lambda: self.surf_zone('ocean')) #oh no!
         keyboard.add_hotkey('shift+a', lambda: self.surf_zone('nature')) #is it magic?
         print('Hotkeys on.')
@@ -213,7 +233,6 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
             tree_order+=([x,y,leaf,1],)
             if kind == 'single':
                 self.count+=1
-                self.numbers += 1
                 for Y in tree_order:
                     sio.emit("p", Y)
                     time.sleep(speed - (self.start - time.time()))
@@ -306,51 +325,52 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
             pass
         
     def wave_edit(self): #water brush -don't change, works good-
-        self.start=time.time()
-        self.x,self.y=self.x+(random.random()*5), self.y-(random.random()*5)
-        if self.cache[self.x, self.y] not in self.colorfilter + [(204,204,204)]:
-            sio.emit("p",[self.x, self.y, self.color,1])
+        '''
+        while (command := input("> ")) != "quit":
+            print("You entered:", command)
+        '''
+        def center():
             self.get_coordinate()
-            nap=speed-(time.time()-self.start)
-            try:
-                time.sleep(nap)
-            except:
-                self.color = oceaneer(self.color)
-        else:
-            self.color = cy_cols(self.color)
+            self.getcurcolor()
+            vary = [self.x, self.y]
+        center()
+        while True:
+            self.start = time.time()
+            if keyboard.is_pressed('q'):
+                print('Returned to port.')
+                return
+            if keyboard.is_pressed('w'):
+                center()
+            if (vary := (self.cache[self.x + random.randrange(-3,3), self.y + random.randrange(-3,3)])) != (0,0,0) + (204,204,204) + self.curcol[0]:
+                print('ok')
+                sio.emit("p",[self.x, self.y, 5, 1])
+                try:
+                    time.sleep(speed - (time.time() - self.start))
+                except:
+                    pass
 
     def ocean(self): #lake and river generator -edit- ############################
+        self.get_coordinate()
+        xy = self.x, self.y 
         print('-W~A-V~E~R-I~D-E~R-')
-        self.color = 38        
-        def r_task(xy):
-            r = random.random()
-            r2 = random.random()            
-            if r < .5:
-                self.y -= 1
-                if r2 < .5:
-                    self.x -= 1
-                    if r + r2 > .5:
-                        if r > r2:
-                            self.color = oceaneer(self.color)
-                else:
+        def roll_dice():
+            if random.random() > 0.5:
+                if random.random() > 0.5:
                     self.x += 1
+                else:
+                    self.x -= 1
             else:
-                self.y += 1
-                if r2 > .5:
-                    self.x += 1
-                    if r + r2 < .5:
-                        if r < r2:
-                            self.color = cy_cols(self.color) 
+                if random.random() > 0.5:
+                    self.y += 1
                 else:
-                    self.x -= 1
-                    self.x, self.y = xy
+                    self.y -= 1
+        def emit_pix():
             if self.cache[self.x, self.y] not in self.colorfilter + [(204,204,204)] + trees_and_oceans:
                 sio.emit("p",[self.x, self.y, self.color, 1])
                 try:
                     time.sleep(speed - (time.time() - self.start))
                 except:
-                    self.x, self.y = xy
-                    pass                
+                    pass
         while True:
             if keyboard.is_pressed('w'):
                 self.get_coordinate()
@@ -359,8 +379,9 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                 print('~W-A~V~E-R-I-D~E~R~')
                 return
             self.start = time.time()
-            r_task(xy)
-            
+            roll_dice()
+            emit_pix()
+        
     def surf_zone(self, loc): #lake and river generator
         try:
             print('The surf breaks.')
@@ -521,30 +542,19 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         
     def get_7(self):
         nummy = random.randint(9999,99999)
-        url = f'https://pixelplace.io/canvas/{board}.png?t={nummy}'
+        url = f'https://pixelplace.io/canvas/{chart}.png?t={nummy}'
         page = requests.get(url)
-        f_name = f'{board}.png'
+        f_name = f'{chart}.png'
         with open(f_name, 'wb') as f:
             f.write(page.content)
-        self.image = PIL.Image.open(f'{board}.png').convert('RGB')
+        self.image = PIL.Image.open(f'{chart}.png').convert('RGB')
         self.cache = self.image.load()
-
-    def manual(self):
-        driver.get(f"https://pixelplace.io/{board}")
-        print("After you login in manually, press f8.")
-
-    def manualf8(self):
-        self.visibility_state()
-        self.auth_data()
-        self.ate_cookies = True
-        keyboard.remove_hotkey('f8')
-        self.connection()
         
     def connection(self):
         sio.connect('https://pixelplace.io', transports=['websocket'])        
         @sio.event
         def connect():
-            sio.emit("init",{"authKey":f"{self.authkey}","authToken":f"{self.authtoken}","authId":f"{self.authid}","boardId":board})
+            sio.emit("init",{"authKey":f"{self.authkey}","authToken":f"{self.authtoken}","authId":f"{self.authid}","boardId":chart})
             threading.Timer(15, connect).start()
             
         @sio.on("p")
@@ -554,43 +564,11 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                     self.cache[i[0], i[1]] = paintz[i[2]]
                 except:
                     pass
-                
-    def login(self):
-        driver.get("https://pixelplace.io/api/sso.php?type=2&action=login")
-        driver.find_element(By.ID,'loginUsername').send_keys(crewmate.username)
-        driver.find_element(By.ID,'loginPassword').send_keys(crewmate.password)
-        driver.find_elements(By.XPATH,'/html/body/div/main/div[1]/div/div[2]/form/fieldset')[4].click()
-        print('Reddit connection successful.')
-        print(f'Studying chart #{board}.')
-        treasure = (random.randint(0, self.image.size[0]),random.randint(0, self.image.size[1]))
-        self.open_treasure = self.cache[treasure[0],treasure[1]]
-        WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH,'/html/body/div[3]/div/div[2]/form/div/input'))).click()
-        print(f'Possible treasure located: x:{treasure[0]}, y:{treasure[1]}')
-        print("Sailing...")
-        driver.get(f"https://pixelplace.io/{board}")
-        if self.open_treasure == (204,204,204):
-            print('.,;,.but nothing was found.,:,.,.')
-            print('~S~u~m~m~e~r~~O~c~e~a~n~~D~a~y~s~')
-        else:
-            print(f'You found {self.open_treasure}...!')
-            print('Hmmm, I wonder what color that is?')
-            print('Maybe I can name it something?')
-            print(f'Oh, and the treasure also contained this old piece of parchment paper.')
-            print(f'There appears to be some writing on it...')
-            print('You translate the parchment:')
-            print('')
-            print(f'{random.choice(tips)}')
-            print("|̲̲̲͡͡͡ ̲▫̲͡ ~Ꭿ~ꇺ~̲̲̲͡͡π̲̲͡͡ ̲̲͡▫̲̲͡͡ ̲|")
-            print('')
-        return
 
     def auth_data(self):
         self.authkey = driver.get_cookie("authKey").get('value')
         self.authtoken = driver.get_cookie("authToken").get('value')
         self.authid = driver.get_cookie("authId").get('value')
-        print('got cookies! yum!')
-        self.ate_cookies = True
     #end of class function
         
 # global variables
@@ -648,4 +626,4 @@ tips = ["Equip your  color with the 1 through 9 keys. Pressing 0 will remove the
         'If you try to draw manually while planting a forest or other tasks, you may get speed debuffed, be careful. Pressing q will end any tasks.']
 
 #start the program
-goto = Sus_Bot(crewmate.username, crewmate.password) #start an instance of the Sus_Bot class as 'goto'
+goto = Sus_Bot() #start an instance of the Sus_Bot class as 'goto'
