@@ -52,7 +52,7 @@ sio = socketio.Client()
 
 #map settings:
 chart = 7 #this is the map number you want to play on
-#other maps: 53813
+#other maps: 
 #note: you will still have to go to that map in your main tab
 #after the bot has connected fully
 
