@@ -169,14 +169,12 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         print('----CONTROLS----')
         print('')
         print('w: Mongus')
-        print('d: Plant Tree')
-        #print('w: Water')        
+        print('d: Plant Tree')      
         print('')
         print('Shift+W: Mark top-left region.')
         print('Shift+D: Mark bottom-right region.')
         print('')
         print('Shift R: Plant Forest in region (except for on equipped colors, browns, blues and greens)')
-        #print('Shift W: Wave source - w again - to relocate Wave source')
         print('Shift S: Ocean defense zone on equipped colors (paints on equipped colors only)')
         print('Shift A: Nature defense zone on equipped colors(paints on equipped colors only)')
         print("q: Stop.")
@@ -203,8 +201,6 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         keyboard.add_hotkey('shift+d', lambda: self.zone('bottom right')) #mark bottom right corner of zone to bot for forest and tv        
         keyboard.add_hotkey('shift+x', lambda: self.toggle_logos()) #toggle guild war logos on/off
         keyboard.add_hotkey('shift+r', lambda: self.forest())#forest of trees in zone area on equipped colors
-        #keyboard.add_hotkey('', lambda: self.wave_edit()) #splashes water around #working on fixing bugs for this dont use yet- dev
-        #keyboard.add_hotkey('shift+', lambda: self.ocean()) #now we are getting serious #working on fixing bugs for this dont use yet- dev
         keyboard.add_hotkey('shift+s', lambda: self.surf_zone('ocean')) #oh no!
         keyboard.add_hotkey('shift+a', lambda: self.surf_zone('nature')) #is it magic?
         print('Hotkeys on.')
