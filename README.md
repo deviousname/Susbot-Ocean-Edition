@@ -10,6 +10,6 @@
 # -------
     for example, I use just Python 3.7.9 and all I need to do is
     double click the script 'Susbot_Ocean_Edition_.py' to run it
-    and it complete logs me into to pixelplace.io, ready to use-    
-    assuming of course you put your reddit loggin into crewmate.py
+    once it gets to pixelplace.io I log in and the controls appear
+    in the console
     
