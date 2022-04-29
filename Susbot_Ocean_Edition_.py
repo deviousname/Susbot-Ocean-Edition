@@ -323,31 +323,6 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         except:
             print('*vented*')
             pass
-        
-    def wave_edit(self): #water brush -don't change, works good-
-        '''
-        while (command := input("> ")) != "quit":
-            print("You entered:", command)
-        '''
-        def center():
-            self.get_coordinate()
-            self.getcurcolor()
-            vary = [self.x, self.y]
-        center()
-        while True:
-            self.start = time.time()
-            if keyboard.is_pressed('q'):
-                print('Returned to port.')
-                return
-            if keyboard.is_pressed('w'):
-                center()
-            if (vary := (self.cache[self.x + random.randrange(-3,3), self.y + random.randrange(-3,3)])) != (0,0,0) + (204,204,204) + self.curcol[0]:
-                print('ok')
-                sio.emit("p",[self.x, self.y, 5, 1])
-                try:
-                    time.sleep(speed - (time.time() - self.start))
-                except:
-                    pass
 
     def ocean(self): #lake and river generator -edit- ############################
         self.get_coordinate()
