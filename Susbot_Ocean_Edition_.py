@@ -1,5 +1,12 @@
-#susbot-ocean-edition
+#susbot
+
 #by deviousname
+
+#GNU Affero General Public License v3.0
+'''Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications,
+which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved.
+Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network,
+the complete source code of the modified version must be made available.'''
 
 import requests
 import os
@@ -25,18 +32,20 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-#settings for Chromedriver to not show its errors in the console
+#settings for Chromedriver to not show its errors on Sus Bot:
 options = webdriver.ChromeOptions()
 options.add_argument('--ignore-certificate-errors')
 options.add_argument("--disable-webgl")
 options.add_experimental_option("excludeSwitches", ["enable-logging"])
 driver = webdriver.Chrome(options=options)
 
-#if you want to use FireFox, remove the # from the next line (put the # back again to go back to Chrome)
+#if you want to use FireFox, remove the # from the next line (put # back again to go back to Chrome)
 #driver = webdriver.Firefox()
-#and download geckodriver.exe from their official page:
-#                  https://github.com/mozilla/geckodriver/releases
-#and put the unzipped geckodriver.exe into the same --> susbot folder <-- as chromedriver.exe
+#and download geckodriver.exe from their official page for it:
+#https://github.com/mozilla/geckodriver/releases
+#and put the unzipped geckodriver.exe into the susbot folder next to chromedriver.exe
+#and then put a # in front of the line below:
+#as long as your firefox and geckodriver matches it should work
 
 #python socket.io stuff:
 sio = socketio.Client()
@@ -142,7 +151,8 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                 time.sleep(7)
                 pass
         print('Investigating treasure...')
-        if (treasure := self.cache[self.treasure[0],self.treasure[1]]) == (204,204,204):
+        treasure = self.cache[self.treasure[0],self.treasure[1]]
+        if treasure == (204,204,204):
             print('.,;,.but nothing was found.,:,.,.')
             print('~S~u~m~m~e~r~~O~c~e~a~n~~D~a~y~s~')
             time.sleep(5)
