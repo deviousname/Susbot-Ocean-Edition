@@ -1,12 +1,5 @@
-#susbot
-
+#susbot-ocean-edition
 #by deviousname
-
-#GNU Affero General Public License v3.0
-'''Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications,
-which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved.
-Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network,
-the complete source code of the modified version must be made available.'''
 
 import requests
 import os
@@ -32,20 +25,18 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-#settings for Chromedriver to not show its errors on Sus Bot:
+#settings for Chromedriver to not show its errors in the console
 options = webdriver.ChromeOptions()
 options.add_argument('--ignore-certificate-errors')
 options.add_argument("--disable-webgl")
 options.add_experimental_option("excludeSwitches", ["enable-logging"])
 driver = webdriver.Chrome(options=options)
 
-#if you want to use FireFox, remove the # from the next line (put # back again to go back to Chrome)
+#if you want to use FireFox, remove the # from the next line (put the # back again to go back to Chrome)
 #driver = webdriver.Firefox()
-#and download geckodriver.exe from their official page for it:
-#https://github.com/mozilla/geckodriver/releases
-#and put the unzipped geckodriver.exe into the susbot folder next to chromedriver.exe
-#and then put a # in front of the line below:
-#as long as your firefox and geckodriver matches it should work
+#and download geckodriver.exe from their official page:
+#                  https://github.com/mozilla/geckodriver/releases
+#and put the unzipped geckodriver.exe into the same --> susbot folder <-- as chromedriver.exe
 
 #python socket.io stuff:
 sio = socketio.Client()
@@ -115,9 +106,10 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         print('~Ꭿ~ꇺ~')
         self.z = 1 #facing direction of ᎯmogsuS
         print("Building ship...")
+        self.work_order = ()
         self.txty, self.bxby = None, None #For tree zone thing, and these equal None... for now...
         self.x, self.y = 0, 0 #player coordiantes
-        self.lastx, self.lasty = self.x, self.y 
+        self.lastx, self.lasty = self.x, self.y
         self.colorfilter = [None, None, None, None, None, None, None, None, None, None]
         self.logos = True
         self.zone_commands = False
@@ -128,30 +120,34 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.get_7()#map
         self.authid= None
         print('Ship construction complete.')
+        driver.get(f"https://pixelplace.io/7")
+        print(f'Studying sea charts.')
         self.treasure = (random.randint(0, self.image.size[0]),random.randint(0, self.image.size[1]))
-        self.open_treasure = self.cache[self.treasure[0],self.treasure[1]]
-        print(f'Studying chart #{chart}.')
         print(f'Possible treasure located: x:{self.treasure[0]}, y:{self.treasure[1]}')
-        print("Sailing...")
-        driver.get(f"https://pixelplace.io/{chart}")
-        width, height= pyautogui.size()
-        driver.set_window_position(int(width/3), 0, windowHandle='current')
+        print("Setting course.")
+        driver.set_window_position(int(pyautogui.size()[0]/3), 0, windowHandle='current')
         while self.authid == None:
             try:
                 self.auth_data()
-                print('Resupplied cookie stash.')
+                print('got cookies, yum!.')
                 self.visibility_state()
                 print('Land ho!')
+                if chart != 7:
+                    driver.get(f"https://pixelplace.io/{chart}")
+                    print(f'Arrived at: Island #{chart}')
+                else:
+                    print(f'After sailing the seven seas for some time...')
             except:
-                print('Another week passes...')
+                print('Another day passes...')
                 time.sleep(7)
                 pass
-        if self.open_treasure == (204,204,204):
+        print('Investigating treasure...')
+        if (treasure := self.cache[self.treasure[0],self.treasure[1]]) == (204,204,204):
             print('.,;,.but nothing was found.,:,.,.')
             print('~S~u~m~m~e~r~~O~c~e~a~n~~D~a~y~s~')
-            time.sleep(3)
+            time.sleep(5)
         else:
-            print(f'You found {self.open_treasure}...!')
+            print(f'You found {treasure}...!')
             print('Hmmm, I wonder what that is?')
             print('Maybe I can name it something?')
             print(f'Oh, and the treasure also contained this old piece of parchment paper.')
@@ -161,23 +157,26 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
             print(f'{random.choice(tips)}')
             print('')
             print("|̲̲̲͡͡͡ ̲▫̲͡ ~Ꭿ~ꇺ~̲̲̲͡͡π̲̲͡͡ ̲̲͡▫̲̲͡͡ ̲|")
-            time.sleep(5)
+            time.sleep(10)
         self.hotkeys()#activate keybinds
         print('~~~~~ꇺ~~Ꭿ~~ඞ~~~~~')
         print('')
         print('SusBot is ready.')
         print('----CONTROLS----')
         print('')
-        print('w: Mongus')
-        print('d: Plant Tree')      
+        print('d: Mongus')
+        print('w: Plant Tree')        
         print('')
         print('Shift+W: Mark top-left region.')
         print('Shift+D: Mark bottom-right region.')
         print('')
-        print('Shift R: Plant Forest in region (except for on equipped colors, browns, blues and greens)')
-        print('Shift S: Ocean defense zone on equipped colors (paints on equipped colors only)')
-        print('Shift A: Nature defense zone on equipped colors(paints on equipped colors only)')
+        print('Shift R: Forest')
+        print('Shift S: Ocean brush')
+        print('Shift A: Nature brush')
         print("q: Stop.")
+        print('')
+        print('Shift V: Copy region.')
+        print('Shift B: Paste region.')
         print('')
         print('Shift X: Toggle Guild War Logos on or off.')
         print('')
@@ -195,14 +194,16 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
     #hotkey binds:
     def hotkeys(self):
         keyboard.on_press(self.onkeypress)#1-9 buttons equip currently selected colors
-        keyboard.add_hotkey("d", lambda: self.tree('single')) #tree
-        keyboard.add_hotkey("w", lambda: self.amogus("single", None, "na")) #sus
+        keyboard.add_hotkey("w", lambda: self.tree('single')) #tree
+        keyboard.add_hotkey("d", lambda: self.amogus("single", None, "na")) #sus
         keyboard.add_hotkey('shift+w', lambda: self.zone('top left')) #mark top left corner of zone to bot for forest and tv
         keyboard.add_hotkey('shift+d', lambda: self.zone('bottom right')) #mark bottom right corner of zone to bot for forest and tv        
         keyboard.add_hotkey('shift+x', lambda: self.toggle_logos()) #toggle guild war logos on/off
         keyboard.add_hotkey('shift+r', lambda: self.forest())#forest of trees in zone area on equipped colors
         keyboard.add_hotkey('shift+s', lambda: self.surf_zone('ocean')) #oh no!
         keyboard.add_hotkey('shift+a', lambda: self.surf_zone('nature')) #is it magic?
+        keyboard.add_hotkey('shift+v', lambda: self.copypaste('copy'))
+        keyboard.add_hotkey('shift+b', lambda: self.copypaste('paste'))
         print('Hotkeys on.')
         
     def tree(self, kind): #this will draw a randomly colored tree, trying to optimize speed
@@ -246,30 +247,18 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         
     def forest(self): #draws a forest
         try:
-            print('Planting forest. Hold q to end task.')
-            while True:
-                self.tree('forest')
-                if keyboard.is_pressed('q'):
-                    if self.primeCheck(self.count) == "Prime":
-                        print(f'Planted {self.count} trees so far...')
-                        print(f"Tree {self.count} was prime.")
-                    else:
-                        print(f'Planted {self.count} trees so far.')
-                    return
+            if self.zone_commands == True:
+                print('Planting forest. Hold q to end task.')
+                while True:
+                    self.tree('forest')
+                    if keyboard.is_pressed('q'):
+                        if self.primeCheck(self.count) == "Prime":
+                            print(f"Just finished planting tree #{self.count}, now what?")
+                        else:
+                            print(f'Planted {self.count} trees so far. What now boss?')
+                        return            
         except:
-            print('Need a forest permit first.')
-            print('Oh, you have one?')
-            print('**You hand the officer some paperwork**')
-            default_square = 16
-            try:
-                self.get_coordinate()
-            except:
-                print('The arborist was lost at sea.')
-            self.txty, self.bxby = (self.x-default_square, self.y-default_square), (self.x+default_square, self.y+default_square)
-            print(f'{self.txty}, {self.bxby} = ({self.x}-{default_square}, {self.y}-{default_square}), ({self.x}+{default_square}, {self.y}+{default_square})')
-            self.exception += 1
-            print(self.exception)
-            self.forest()
+            print('Do not have forestry permit yet.')
         
     def primeCheck(self, n):
         # 0, 1, even numbers greater than 2 are NOT PRIME
@@ -305,7 +294,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                 c = cy_cols(paintz.index(self.curcol[0]))
             else: #left facing
                 for n in range(2):
-                    sio.emit("p",[X-(n*self.z),Y,38,1])
+                    sio.emit("p",[X-(n*self.z),Y,36,1])
                     time.sleep(speed)
                 x, y = X-1, Y + 2        
                 body=[(x,y),(x,y-1),(x+(self.z*1),y-1),(x+(self.z*2),y),(x+(self.z*2),y-1),(x+(self.z*3),y-1),
@@ -319,52 +308,27 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         except:
             print('*vented*')
             pass
-
-    def ocean(self): #lake and river generator -edit- ############################
-        self.get_coordinate()
-        xy = self.x, self.y 
-        print('-W~A-V~E~R-I~D-E~R-')
-        def roll_dice():
-            if random.random() > 0.5:
-                if random.random() > 0.5:
-                    self.x += 1
-                else:
-                    self.x -= 1
-            else:
-                if random.random() > 0.5:
-                    self.y += 1
-                else:
-                    self.y -= 1
-        def emit_pix():
-            if self.cache[self.x, self.y] not in self.colorfilter + [(204,204,204)] + trees_and_oceans:
-                sio.emit("p",[self.x, self.y, self.color, 1])
-                try:
-                    time.sleep(speed - (time.time() - self.start))
-                except:
-                    pass
-        while True:
-            if keyboard.is_pressed('w'):
-                self.get_coordinate()
-                xy = self.x, self.y 
-            if keyboard.is_pressed('q'):
-                print('~W-A~V~E-R-I-D~E~R~')
-                return
-            self.start = time.time()
-            roll_dice()
-            emit_pix()
         
-    def surf_zone(self, loc): #lake and river generator
+    def oceaneer(self): #good for Oceans
+        if random.random() > .5:
+            self.color+=1
+        else:
+            self.color-=1
+        if self.color < 30:
+            self.color = 38
+        if self.color > 38:
+            self.color = 30
+        return self.color
+
+    def surf_zone(self, loc): #lake and river brush
         try:
-            print('The surf breaks.')
-            default_square = 1 #incase you dont have a zone in mind
+            print('The surf breaks.')        
+            default_square = 4//2 #incase you dont have a zone in mind
             self.get_coordinate()
-            xy = self.x, self.y
             self.getcurcolor()
             self.color = paintz.index(self.curcol[0])
-            while True:
-                if keyboard.is_pressed('q'):
-                    print('The surf recedes.')
-                    return
+            xy = self.x, self.y        
+            def rdxy(): #random direction for x, y
                 if random.random() > 0.5:
                     if random.random() > 0.5:
                         self.x += 1
@@ -375,25 +339,94 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                         self.y += 1
                     else:
                         self.y -= 1
-                if self.cache[self.x, self.y] in self.colorfilter:
-                    sio.emit("p",[self.x, self.y, self.color, 1])
-                    if loc == 'ocean':
-                        self.color = oceaneer(self.color)
-                    elif loc == 'nature':
-                        self.color = cy_cols(self.color)
-                    try:
-                        if self.x < self.txty[0] or self.y < self.txty[1] or self.x > self.bxby[0] or self.y > self.bxby[1]:
-                            self.x, self.y = xy
-                    except:
-                        self.txty, self.bxby = (self.x-default_square, self.y-default_square), (self.x+default_square, self.y+default_square)
-                    try:
-                        time.sleep(default_speed - (time.time() - self.start))
-                    except:
-                        self.start = time.time()
+                return self.cache[self.x, self.y]        
+            def emit_and_sleep(loc):
+                if loc == 'ocean':
+                    self.oceaneer()
+                elif loc == 'nature':
+                    self.color = terrain(self.color)
+                else:
+                    print('W-what?')
+                    return
+                sio.emit("p",[self.x, self.y, self.color, 1])
+                try:
+                    time.sleep(default_speed - (time.time() - self.start))
                     self.start = time.time()
+                except:
+                    time.sleep(default_speed)
+                    self.start = time.time()
+            def bound_check():
+                if [self.txty, self.bxby] != [None, None]:
+                    if self.x < self.txty[0] or self.y < self.txty[1] or self.x > self.bxby[0] or self.y > self.bxby[1]:
+                        try:
+                            self.get_coordinate()
+                            xy = self.x, self.y
+                        except:
+                            self.x, self.y = xy
+                else:
+                    try:
+                        self.get_coordinate()
+                        self.txty = self.x-default_square, self.y-default_square
+                        self.bxby = self.x+default_square, self.y+default_square
+                    except:
+                        print('Try again.')
+                        pass
+            self.start = time.time()        
+            while True:
+                if keyboard.is_pressed('q'):
+                    print('The surf recedes.')
+                    return
+                pixels = rdxy()
+                if self.colorfilter != [None, None, None, None, None, None, None, None, None, None]:
+                    if pixels in self.colorfilter:
+                        emit_and_sleep(loc)
+                        bound_check()
+                else:
+                    if pixels not in trees_and_oceans:
+                        emit_and_sleep(loc)
+                        bound_check()
         except:
+            print("Wipeout!")
             pass
-        
+                        
+    def copypaste(self, option):
+        try:
+            if option == "copy":
+                if self.zone_commands != True:
+                    print('Make a region first boss.')
+                else:
+                    print('Copying...')
+                    self.work_order = ()
+                    cx = (self.bxby[0] - self.txty[0]) // 2
+                    print(cx)
+                    cy = (self.bxby[1] - self.txty[1]) // 2
+                    print(cy)
+                    for X in range(self.txty[0], self.bxby[0]):
+                        for Y in range(self.txty[1], self.bxby[1]):
+                            if self.cache[X, Y] not in self.colorfilter + [(204,204,204)]:
+                                self.work_order += ((X-self.txty[0]-cx, Y-self.txty[1]-cy, paintz.index(self.cache[X, Y])),)
+                    print('Done.')
+                    print(self.work_order)
+            elif option == "paste":
+                if self.work_order != ():
+                    print('Pasting...')
+                    self.get_coordinate()
+                    for i in self.work_order:
+                        if keyboard.is_pressed('q'):
+                            print('Canceling job.')
+                            return
+                        sio.emit("p",[self.x+i[0], self.y+i[1], i[2], 1])
+                        try:
+                            time.sleep(speed - (time.time() - self.start))
+                            self.start = time.time()
+                        except:
+                            time.sleep(speed)
+                            self.start = time.time()
+                    print('Done.')
+        except:
+            print('Failed.')
+            pass
+    
     def zone(self, hotkey): #zone constructor
         try:
             self.get_coordinate()
@@ -421,6 +454,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
     def get_coordinate(self):#check the coordinate of where your cursor is on the selenium pixelplace site
         try:
             self.x, self.y = make_tuple(driver.find_element(By.XPATH,'/html/body/div[3]/div[4]').text)
+            return (self.x, self.y)
         except:
              pass
         
@@ -512,12 +546,8 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         time.sleep(.5)
         
     def get_7(self):
-        nummy = random.randint(9999,99999)
-        url = f'https://pixelplace.io/canvas/{chart}.png?t={nummy}'
-        page = requests.get(url)
-        f_name = f'{chart}.png'
-        with open(f_name, 'wb') as f:
-            f.write(page.content)
+        with open(f'{chart}.png', 'wb') as f:
+            f.write(requests.get(f'https://pixelplace.io/canvas/{chart}.png?t={random.randint(9999,99999)}').content)
         self.image = PIL.Image.open(f'{chart}.png').convert('RGB')
         self.cache = self.image.load()
         
@@ -535,36 +565,37 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                     self.cache[i[0], i[1]] = paintz[i[2]]
                 except:
                     pass
-
+    
     def auth_data(self):
         self.authkey = driver.get_cookie("authKey").get('value')
         self.authtoken = driver.get_cookie("authToken").get('value')
         self.authid = driver.get_cookie("authId").get('value')
     #end of class function
         
-# global variables
+# globals
 trees_and_oceans = [(0,102,0),(34,177,76),(2,190,1),(81,225,25),(148,224,68),
 		    (229,149,0),(160,106,66),(153,83,13),(99,60,31),(187,79,0),
                     (81,0,255),(2,7,99),(0,0,234),(4,75,255),(101,131,207),
                     (54,186,255),(0,131,199),(0,211,221),(69,255,200)]
 
-#global list
 leaves = [paintz.index(k) for k in paintz if paintz.index(k) in range(6,10+1)] #the +1 ensures the end of range is accounted for
 leaves_cycle = cycle(leaves)
 trunks = [paintz.index(k) for k in paintz if paintz.index(k) in range(15,17+1)] + [22]
 trunks_cycle = cycle(trunks)
+terrain_tiles=[
+    k for k in paintz if paintz.index(k)in range(15,17+1)]+[
+    paintz[22]]+[k for k in paintz if paintz.index(k)in range(6,10+1)]+[
+    (196,196,196),(136,136,136),(85,85,85),(34,34,34),(0,0,0),(229,149,0),(255,196,159),(255,223,204)]
+terrain_cy = cycle(terrain_tiles)
+terrain_tiles_reversed = terrain_tiles[::-1]
+reverse_terrain_cy = cycle(terrain_tiles_reversed)
 
-# global functions        
-def oceaneer(a): #good for Oceans
+def terrain(a): #return next terrain color
     if random.random() > .5:
-        a += 1        
+        a = next(terrain_cy)
     else:
-        a -= 1
-    if a < 30:
-        a = 38
-    if a > 38:
-        a = 30
-    return a
+        a = next(reverse_terrain_cy)
+    return paintz.index(a)
 
 def cy_cols(a): #50/50 chance to go forward or backward
     if random.random() > .5: 
@@ -589,11 +620,10 @@ def cy_cols(a): #50/50 chance to go forward or backward
     #more similar global functions like cy_cols toward bottom of code
 
 #tips
-tips = ["Equip your  color with the 1 through 9 keys. Pressing 0 will remove them. These can modify other abilities.",
-        "Successfully creating a region with u and y will allow you to grow trees there with Shift R, except for on browns, blues, greens, and equipped colors.",
-        "Pressing Shift W will unleash a Water front at your mouse location. Pressing w again will move it to your new location. q will stop the current. ",
+tips = ["Equip your  color with the 1 through 9  and 0 keys. Pressing ` will remove them. These can modify other abilities.",
+        "Successfully creating a region will allow you to grow trees there with Shift R, except for on browns, blues, greens, and equipped colors.",
         "If you want to paint underneath the guild war logos, toggle them off with Shift X.",
-        '"The Copy and Paste feature is coming soon." TM',
+        'If you equip a color to the colorfilter using the 0-9 keys, and then copy something, it will not copy the equipped colors.',
         'If you try to draw manually while planting a forest or other tasks, you may get speed debuffed, be careful. Pressing q will end any tasks.']
 
 #start the program
