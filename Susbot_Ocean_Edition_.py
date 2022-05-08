@@ -1,12 +1,5 @@
-#susbot
-
+#susbot-ocean-edition
 #by deviousname
-
-#GNU Affero General Public License v3.0
-'''Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications,
-which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved.
-Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network,
-the complete source code of the modified version must be made available.'''
 
 import requests
 import os
@@ -416,7 +409,6 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                             if self.cache[X, Y] not in self.colorfilter + [(204,204,204)]:
                                 self.work_order += ((X-self.txty[0]-cx, Y-self.txty[1]-cy, paintz.index(self.cache[X, Y])),)
                     print('Done.')
-                    print(self.work_order)
             elif option == "paste":
                 if self.work_order != ():
                     print('Pasting...')
@@ -433,6 +425,8 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                             time.sleep(speed)
                             self.start = time.time()
                     print('Done.')
+                else:
+                    print('Need to copy a region first boss.')
         except:
             print('Failed.')
             pass
