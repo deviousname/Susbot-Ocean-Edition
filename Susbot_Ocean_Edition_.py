@@ -655,8 +655,8 @@ def cy_cols(a): #50/50 chance to go forward or backward
 tips = ["Equip your  color with the 1 through 9  and 0 keys. Pressing ` will remove them. These can modify other abilities.",
         "Successfully creating a region will allow you to grow trees there with Shift R, except for on browns, blues, greens, and equipped colors.",
         "If you want to paint underneath the guild war logos, toggle them off with Shift X.",
-        'If you equip a color to the colorfilter using the 0-9 keys, and then copy something, it will not copy the equipped colors.',
-        'If you try to draw manually while planting a forest or other tasks, you may get speed debuffed, be careful. Pressing q will end any tasks.']
+        'If you equip a color to the colorfilter using the 0-9 keys, and then copy something, it will not copy the equipped colors. This allows for transparency effects.',
+        f'If you try to draw manually while planting a forest or other tasks, you may get speed debuffed, be careful. Pressing {stop_key} will end any tasks.']
 
 #start the program
 susbot = Sus_Bot() #start an instance of the Sus_Bot class as 'susbot'
