@@ -1,6 +1,17 @@
 #susbot
 #by deviousname
 
+############################
+# Todo:
+# Add universal copy/paste
+# Add improved TV function
+# Add more direction control for mongus
+# Improve effeciency of the water/terrain/color brush
+# Add line tool
+# Add shape tools (circles, polygons)
+# Add restoration tool again
+############################
+
 #map settings:
 chart = 7 #this is the map number you want to play on
 
@@ -13,14 +24,17 @@ max_speed = 0.016  # DANGER!!! *You can get autobanned for going too fast.
 speed = default_speed # Set speed here. 
 #--|###############|--# Recommend: speed = default_speed
 
+#Stop key: (this key will stop whatever action you are taking)
+stop_key = 'f8' #make sure the key isn't already being used
+
 class Sus_Bot(): #---------Sus_Bot main class-----------            
     #hotkey binds:
     def hotkeys(self):
         keyboard.on_press(self.onkeypress)#1-9 buttons equip currently selected colors
         keyboard.add_hotkey("w", lambda: self.tree('single')) #tree
         keyboard.add_hotkey("d", lambda: self.amogus("single", None, "na")) #sus
-        keyboard.add_hotkey('shift+w', lambda: self.zone('top left')) #mark top left corner of zone to bot for forest and tv
-        keyboard.add_hotkey('shift+d', lambda: self.zone('bottom right')) #mark bottom right corner of zone to bot for forest and tv        
+        keyboard.add_hotkey('shift+w', lambda: self.zone('top left')) #mark top left corner of zone to bot for forest or copy
+        keyboard.add_hotkey('shift+d', lambda: self.zone('bottom right')) #mark bottom right corner of zone to bot for forest or copy
         keyboard.add_hotkey('shift+x', lambda: self.toggle_logos()) #toggle guild war logos on/off
         keyboard.add_hotkey('shift+r', lambda: self.forest())#forest of trees in zone area on equipped colors
         keyboard.add_hotkey('shift+s', lambda: self.surf_zone('ocean'))
@@ -72,12 +86,12 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
     def forest(self): #draws a forest
         try:
             if self.zone_commands == True:
-                print('Planting forest. Hold q to end task.')
+                print(f'Planting forest. Hold {stop_key} to end task.')
                 while True:
                     self.tree('forest')
-                    if keyboard.is_pressed('q'):
+                    if keyboard.is_pressed(stop_key):
                         if self.primeCheck(self.count) == "Prime":
-                            print(f"Just finished planting tree #{self.count}, now what?")
+                            print(f"Tree #{self.count} is prime.")
                         else:
                             print(f'Planted {self.count} trees so far. What now boss?')
                         return            
@@ -215,7 +229,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.start = time.time()        
         while True:
             
-            if keyboard.is_pressed('q'):
+            if keyboard.is_pressed(stop_key):
                 print('The surf recedes.')
                 return
             
@@ -256,7 +270,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                     self.get_coordinate()
                     self.getcurcolor()
                     for i in self.work_order:
-                        if keyboard.is_pressed('q'):
+                        if keyboard.is_pressed(stop_key):
                             print('Canceling job.')
                             return
                         if self.cache[i[0]+self.x, i[1]+self.y] not in self.colorfilter + [(204,204,204)]+ [paintz[i[2]]]:
@@ -391,13 +405,13 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
             self.logos = True
         time.sleep(.5)
         
-    def get_7(self):
+    def get_7(self): #get the current selected map for the cache
         with open(f'{chart}.png', 'wb') as f:
             f.write(requests.get(f'https://pixelplace.io/canvas/{chart}.png?t={random.randint(9999,99999)}').content)
         self.image = PIL.Image.open(f'{chart}.png').convert('RGB')
         self.cache = self.image.load()
         
-    def connection(self):
+    def connection(self): #connect to pixelplace
         sio.connect('https://pixelplace.io', transports=['websocket'])        
         @sio.event
         def connect():
@@ -412,7 +426,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                 except:
                     pass
     
-    def auth_data(self):
+    def auth_data(self): #send cookies to pixelplace
         self.authkey = driver.get_cookie("authKey").get('value')
         self.authtoken = driver.get_cookie("authToken").get('value')
         self.authid = driver.get_cookie("authId").get('value')
@@ -511,7 +525,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.connection() #start pixelplace socket connection
     #end of class function
         
-# globals
+# imports
 import requests
 import os
 import json
@@ -641,4 +655,4 @@ tips = ["Equip your  color with the 1 through 9  and 0 keys. Pressing ` will rem
         'If you try to draw manually while planting a forest or other tasks, you may get speed debuffed, be careful. Pressing q will end any tasks.']
 
 #start the program
-goto = Sus_Bot() #start an instance of the Sus_Bot class as 'goto'
+susbot = Sus_Bot() #start an instance of the Sus_Bot class as 'susbot'
