@@ -195,7 +195,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                 pass
             return returnal if returnal in paintz else None
         
-        def emit_and_sleep(loc):
+        def emit_and_sleep(loc): #this sub function runs the brush code inside a retiming timer to optimize the sleeps for brush speed settings
             if loc == 'ocean':
                 self.oceaneer()
             elif loc == 'nature':
@@ -206,10 +206,10 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                 print('W-what?')
                 return
             sio.emit("p",[self.x, self.y, self.color, 1])                
-            time.sleep(speed - (self.start - time.time()))
-            self.start = time.time()
+            time.sleep(speed - (self.start - time.time()))  
+            self.start = time.time()#the idea is to start your timer as soon as the last sleep was finished and base your next sleeps duration off that 
             
-        def bound_check():
+        def bound_check(): #this checks if you are inside your region
             if [self.txty, self.bxby] != [None, None]:
                 if self.x < self.txty[0] or self.y < self.txty[1] or self.x > self.bxby[0] or self.y > self.bxby[1]:
                     try:
@@ -227,7 +227,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                     pass
                 
         self.start = time.time()        
-        while True:
+        while True: 
             
             if keyboard.is_pressed(stop_key):
                 print('The surf recedes.')
@@ -250,9 +250,9 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                         emit_and_sleep(loc)
                         bound_check()
                         
-    def copypaste(self, option):
+    def copypaste(self, option): #this is the copy/paster
         try:
-            if option == "copy":
+            if option == "copy": #-----copy section-----#
                 if self.zone_commands != True:
                     print('Make a region first boss.')
                 else:
@@ -265,7 +265,8 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                             if self.cache[X, Y] not in self.colorfilter + [(204,204,204)]:
                                 self.work_order += ((X-self.txty[0]-cx, Y-self.txty[1]-cy, paintz.index(self.cache[X, Y])),)
                     print('Done.')
-            elif option == "paste":
+                    
+            elif option == "paste": #-----paste section-----#
                 if self.work_order != ():
                     self.get_coordinate()
                     self.getcurcolor()
@@ -411,22 +412,22 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.image = PIL.Image.open(f'{chart}.png').convert('RGB')
         self.cache = self.image.load()
         
-    def connection(self): #connect to pixelplace
+    def connection(self): #two different functions to maintain during connection, the cookies, and the pixel cache
         sio.connect('https://pixelplace.io', transports=['websocket'])        
         @sio.event
-        def connect():
+        def connect():#socket connection method for pixelplace which uses the cookis you get from auth_data()
             sio.emit("init",{"authKey":f"{self.authkey}","authToken":f"{self.authtoken}","authId":f"{self.authid}","boardId":chart})
             threading.Timer(15, connect).start()
             
-        @sio.on("p")
-        def update_pixels(p: tuple):
+        @sio.on("p") 
+        def update_pixels(p: tuple): #this collects all the pixels people draw on the map into self.cache so your computer can access it quickly for the painting features
             for i in p:
                 try:
                     self.cache[i[0], i[1]] = paintz[i[2]]
                 except:
                     pass
     
-    def auth_data(self): #send cookies to pixelplace
+    def auth_data(self): #get pixelplace cookies to use for maintaining socket connection
         self.authkey = driver.get_cookie("authKey").get('value')
         self.authtoken = driver.get_cookie("authToken").get('value')
         self.authid = driver.get_cookie("authId").get('value')
@@ -566,9 +567,8 @@ driver = webdriver.Chrome(options=options)
 #driver = webdriver.Firefox()
 #and download geckodriver.exe from their official page for it:
 #https://github.com/mozilla/geckodriver/releases
-#and put the unzipped geckodriver.exe into the susbot folder next to chromedriver.exe
-#and then put a # in front of the line below:
-#as long as your firefox and geckodriver matches it should work
+#and put the unzipped geckodriver.exe into the susbot folder
+#as long as your firefox and geckodriver versions match it should work
 
 #python socket.io stuff:
 sio = socketio.Client()
