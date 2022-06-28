@@ -15,13 +15,13 @@
 #map settings:
 chart = 7 #this is the map number you want to play on
 
-#BOT SPEED SETTINGS:
+#BOT speed SETTINGS:
 slow_speed = 0.04 # seconds
 default_speed = 0.02 # default
 max_speed = 0.016  # DANGER!!! *You can get autobanned for going too fast.
 
 #--|###############|--# Bot global speed:
-speed = default_speed # Set speed here. 
+speed = default_speed # Set speed here
 #--|###############|--# Recommend: speed = default_speed
 
 #Stop key: (this key will stop whatever action you are taking)
@@ -42,8 +42,87 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         keyboard.add_hotkey('shift+e', lambda: self.surf_zone('color'))
         keyboard.add_hotkey('shift+v', lambda: self.copypaste('copy'))
         keyboard.add_hotkey('shift+b', lambda: self.copypaste('paste'))
+        keyboard.add_hotkey('shift+z', lambda: self.draw_circle(self.get_color_index(), 8, 'single'))
+        keyboard.add_hotkey('alt+z', lambda: self.draw_circle(self.get_color_index(), 8, 'loop'))
+        keyboard.add_hotkey("q", lambda: self.tree_style_2('single')) #tree
+        keyboard.add_hotkey("a", lambda: self.tree_style_3('single')) #tree
+        keyboard.add_hotkey("shift+insert", lambda: self.change_speed('decrease'))
+        keyboard.add_hotkey("shift+del", lambda: self.change_speed('increase'))
+        keyboard.add_hotkey("f9", lambda: self.change_circle_mode()) 
         print('Hotkeys on.')
+        
+    def change_speed(self, opt):
+        global speed
+        if opt == 'decrease':
+            speed += 0.001
+            print(speed)
+        elif opt == 'increase':
+            speed -= 0.001
+            print(speed)
             
+    def get_color_index(self):
+        self.getcurcolor()
+        return paintz.index(self.curcol[0])
+    
+    def change_circle_mode(self):
+        self.circle_mode = next(circle_m)
+        print(self.circle_mode)
+        time.sleep(1)
+        
+    def draw_circle(self, color, radius, option): #function in beta, still lots of work needed to clean code and optimize
+        try:
+            radius = ((self.bxby[0]-self.txty[0])+(self.bxby[1]-self.txty[1])) // 2
+        except:
+            pass
+        
+        self.get_coordinate()
+
+        if option == 'loop':
+            print('loop')
+            while True:
+                if keyboard.is_pressed(stop_key):
+                    break
+                circle_list = []
+                for x in range(self.x - radius, self.x + radius):
+                    for y in range(self.y - radius, self.y + radius):
+                        if (x - self.x) ** 2 + (y - self.y) ** 2 <= radius ** 2:
+                            circle_list+=[[x, y],]             
+                if self.circle_mode == 'skewed':
+                    circle_list.sort(key=lambda x: (x[0] - 100) ** 2 + (x[1] - 100) ** 2) #skewed print
+                elif self.circle_mode == 'dot':
+                    random.shuffle(circle_list)             
+                for i in circle_list:
+                    try:
+                        clr = paintz.index(self.cache[i[0], i[1]])
+                    except:
+                        clr = color
+                    if clr != color:
+                        sio.emit('p',[i[0], i[1], abs(self.get_color_index()-clr), 1])
+                        time.sleep(speed)
+                    if keyboard.is_pressed(stop_key):
+                        break
+        else:
+            circle_list = []
+            for x in range(self.x - radius, self.x + radius):
+                for y in range(self.y - radius, self.y + radius):
+                    if (x - self.x) ** 2 + (y - self.y) ** 2 <= radius ** 2:
+                        circle_list+=[[x, y],]
+                        
+            if self.circle_mode == 'skewed':
+                circle_list.sort(key=lambda x: (x[0] - 100) ** 2 + (x[1] - 100) ** 2) #skewed print
+            elif self.circle_mode == 'dot':
+                random.shuffle(circle_list)              
+            for i in circle_list:
+                try:
+                    clr = paintz.index(self.cache[i[0], i[1]])
+                except:
+                    clr = color
+                if clr != color:
+                    sio.emit('p',[i[0], i[1], abs(self.get_color_index()-clr), 1])
+                    time.sleep(speed)
+                if keyboard.is_pressed(stop_key):
+                    break
+    
     def tree(self, kind): #this will draw a randomly colored tree, trying to optimize speed
         try:
             self.start = time.time()
@@ -82,13 +161,225 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         except:
             print('Timber!')
             pass
-        
+
+    # Style 2 (medium tree)
+    def tree_style_2(self, kind):
+        self.start = time.time()
+        tree_order = ()
+        if kind == 'single':
+            self.get_coordinate()
+            x, y = self.x, self.y
+        else:
+            x, y = random.randrange(self.txty[0],self.bxby[0]),random.randrange(self.txty[1],self.bxby[1])
+            self.x, self.y = x, y
+        trunk=next(trunks_cycle)
+        for a in range(5):
+            tree_order+=([x,y-a,trunk,1],) 
+        leaf=next(leaves_cycle)
+        y -= a
+        for b in range(3):
+            tree_order+=([x+b-1,y,leaf,1],)
+        y -= 1
+        for c in range(3):
+            tree_order+=([x+c-1,y,leaf,1],)
+        y -= 1
+        for d in range(3):
+            tree_order+=([x+d-1,y,leaf,1],)
+        y -= 1
+        tree_order+=([x,y,leaf,1],)
+        if kind == 'single':
+            self.count+=1
+            for Y in tree_order:
+                sio.emit("p", Y)
+                time.sleep(speed - (self.start - time.time()))
+                self.start = time.time()
+        else:
+            if self.cache[self.x, self.y] not in trees_and_oceans + [(204,204,204)] + self.colorfilter:
+                self.count+=1
+                for Y in tree_order:
+                    sio.emit("p", Y)
+                    time.sleep(speed - (self.start - time.time()))
+                    self.start = time.time()
+
+    # Style 3 (large tree)
+    def tree_style_3(self, kind):
+        self.start = time.time()
+        tree_order = ()
+        if kind == 'single':
+            self.get_coordinate()
+            x, y = self.x, self.y
+        else:
+            x, y = random.randrange(self.txty[0],self.bxby[0]),random.randrange(self.txty[1],self.bxby[1])
+            self.x, self.y = x, y
+        trunk=next(trunks_cycle)
+        for a in range(6):
+            tree_order+=([x,y-a,trunk,1],) 
+        leaf=next(leaves_cycle)
+        y -= a
+        for b in range(3):
+            tree_order+=([x+b-1,y,leaf,1],)
+        y -= 1
+        for c in range(3):
+            tree_order+=([x+c-1,y,leaf,1],)
+        y -= 1
+        for d in range(3):
+            tree_order+=([x+d-1,y,leaf,1],)
+        y -= 1
+        for e in range(3):
+            tree_order+=([x+e-1,y,leaf,1],)
+        y -= 1
+        tree_order+=([x,y,leaf,1],)
+        if kind == 'single':
+            self.count+=1
+            for Y in tree_order:
+                sio.emit("p", Y)
+                time.sleep(speed - (self.start - time.time()))
+                self.start = time.time()
+
+    # Style 4 (palm tree)
+    def tree_style_4(self, kind):
+        self.start = time.time()
+        tree_order = ()
+        if kind == 'single':
+            self.get_coordinate()
+            x, y = self.x, self.y
+        else:
+            x, y = random.randrange(self.txty[0],self.bxby[0]),random.randrange(self.txty[1],self.bxby[1])
+            self.x, self.y = x, y
+        trunk=next(trunks_cycle)
+        for a in range(5):
+            tree_order+=([x,y-a,trunk,1],) 
+        leaf=next(leaves_cycle)
+        y -= a
+        for b in range(3):
+            tree_order+=([x+b-1,y,leaf,1],)
+        y -= 1
+        for c in range(3):
+            tree_order+=([x+c-1,y,leaf,1],)
+        y -= 1
+        for d in range(3):
+            tree_order+=([x+d-1,y,leaf,1],)
+        y -= 1
+        for e in range(3):
+            tree_order+=([x+e-1,y,leaf,1],)
+        y -= 1
+        for f in range(3):
+            tree_order+=([x+f-1,y,leaf,1],)
+        y -= 1
+        tree_order+=([x,y,leaf,1],)
+        if kind == 'single':
+            self.count+=1
+            for Y in tree_order:
+                sio.emit("p", Y)
+                time.sleep(speed - (self.start - time.time()))
+                self.start = time.time()
+        else:
+            if self.cache[self.x, self.y] not in trees_and_oceans + [(204,204,204)] + self.colorfilter:
+                self.count+=1
+                for Y in tree_order:
+                    sio.emit("p", Y)
+                    time.sleep(speed - (self.start - time.time()))
+                    self.start = time.time()
+
+    # Style 5 (pine tree)
+    def tree_style_5(self, kind):
+        self.start = time.time()
+        tree_order = ()
+        if kind == 'single':
+            self.get_coordinate()
+            x, y = self.x, self.y
+        else:
+            x, y = random.randrange(self.txty[0],self.bxby[0]),random.randrange(self.txty[1],self.bxby[1])
+            self.x, self.y = x, y
+        trunk=next(trunks_cycle)
+        for a in range(4):
+            tree_order+=([x,y-a,trunk,1],) 
+        leaf=next(leaves_cycle)
+        y -= a
+        for b in range(3):
+            tree_order+=([x+b-1,y,leaf,1],)
+        y -= 1
+        for c in range(3):
+            tree_order+=([x+c-1,y,leaf,1],)
+        y -= 1
+        for d in range(3):
+            tree_order+=([x+d-1,y,leaf,1],)
+        y -= 1
+        for e in range(3):
+            tree_order+=([x+e-1,y,leaf,1],)
+        y -= 1
+        for f in range(3):
+            tree_order+=([x+f-1,y,leaf,1],)
+        y -= 1
+        tree_order+=([x,y,leaf,1],)
+        if kind == 'single':
+            self.count+=1
+            for Y in tree_order:
+                sio.emit("p", Y)
+                time.sleep(speed - (self.start - time.time()))
+                self.start = time.time()
+        else:
+            if self.cache[self.x, self.y] not in trees_and_oceans + [(204,204,204)] + self.colorfilter:
+                self.count+=1
+                for Y in tree_order:
+                    sio.emit("p", Y)
+                    time.sleep(speed - (self.start - time.time()))
+                    self.start = time.time()
+
+    # Style 6 (large pine tree)
+    def tree_style_6(self, kind):
+        self.start = time.time()
+        tree_order = ()
+        if kind == 'single':
+            self.get_coordinate()
+            x, y = self.x, self.y
+        else:
+            x, y = random.randrange(self.txty[0],self.bxby[0]),random.randrange(self.txty[1],self.bxby[1])
+            self.x, self.y = x, y
+        trunk=next(trunks_cycle)
+        for a in range(5):
+            tree_order+=([x,y-a,trunk,1],) 
+        leaf=next(leaves_cycle)
+        y -= a
+        for b in range(3):
+            tree_order+=([x+b-1,y,leaf,1],)
+        y -= 1
+        for c in range(3):
+            tree_order+=([x+c-1,y,leaf,1],)
+        y -= 1
+        for d in range(3):
+            tree_order+=([x+d-1,y,leaf,1],)
+        y -= 1
+        for e in range(3):
+            tree_order+=([x+e-1,y,leaf,1],)
+        y -= 1
+        for f in range(3):
+            tree_order+=([x+f-1,y,leaf,1],)
+        y -= 1
+        for g in range(3):
+            tree_order+=([x+g-1,y,leaf,1],)
+        y -= 1
+        tree_order+=([x,y,leaf,1],)
+        if kind == 'single':
+            self.count+=1
+            for Y in tree_order:
+                sio.emit("p", Y)
+                time.sleep(speed - (self.start - time.time()))
+                self.start = time.time()
+        else:
+            if self.cache[self.x, self.y] not in trees_and_oceans + [(204,204,204)] + self.colorfilter:
+                self.count+=1
+                for Y in tree_order:
+                    sio.emit("p", Y)
+                    time.sleep(speed - (self.start - time.time()))
+                    self.start = time.time()
+
     def forest(self): #draws a forest
         try:
             if self.zone_commands == True:
                 print(f'Planting forest. Hold {stop_key} to end task.')
                 while True:
-                    self.tree('forest')
+                    random.choice((self.tree_style_3('forest'), self.tree_style_2('forest'), self.tree('forest'), self.tree_style_4('forest'), self.tree_style_5('forest'), self.tree_style_6('forest')))
                     if keyboard.is_pressed(stop_key):
                         if self.primeCheck(self.count) == "Prime":
                             print(f"Tree #{self.count} is prime.")
@@ -249,7 +540,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                     if pixels != paintz[self.color]:
                         emit_and_sleep(loc)
                         bound_check()
-                        
+                
     def copypaste(self, option): #this is the copy/paster
         try:
             if option == "copy": #-----copy section-----#
@@ -447,6 +738,8 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.zone_commands = False
         self.count = 0
         self.exception = 0
+        self.circle_mode = next(circle_m)
+        print(self.circle_mode)
         self.color = random.randint(0, 39)
         self.start = None
         self.get_7()#map
@@ -457,7 +750,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.treasure = (random.randint(0, self.image.size[0]),random.randint(0, self.image.size[1]))
         print(f'Possible treasure located: x:{self.treasure[0]}, y:{self.treasure[1]}')
         print("Setting course.")
-        driver.set_window_position(int(pyautogui.size()[0]/3), 0, windowHandle='current')
+        driver.set_window_position(int(pyautogui.size()[0]/4), 0, windowHandle='current')
         while self.authid == None:
             try:
                 self.auth_data()
@@ -629,6 +922,9 @@ terrain_tiles=[1,2,3,4,13,23,24] + leaves + trunks
 terrain_cy = cycle(terrain_tiles)
 terrain_tiles_reversed = terrain_tiles[::-1]
 reverse_terrain_cy = cycle(terrain_tiles_reversed)
+
+circle_modes = ['skewed','dot']
+circle_m = cycle(circle_modes)
 
 def cy_cols(a): #50/50 chance to go forward or backward
     if random.random() > .5: 
