@@ -5,6 +5,9 @@
 # -------
     download and unzip susbot-ocean-edition
     install each required library for Susbot_Ocean_Edition_.py
+    you can: pip install -r requirements.txt
+    to install them all at once from your command prompt
+    (make sure you are in the susbot folder in command prompt)
 # -------
     ensure correct librarys installed to correct version of python
 # -------
