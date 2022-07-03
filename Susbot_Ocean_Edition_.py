@@ -517,12 +517,18 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
                     print('Try again.')
                     pass
                 
-        self.start = time.time()        
+        def localize():
+            self.get_coordinate()
+            xy = self.x, self.y
+            
+        self.start = time.time()       
         while True: 
             
             if keyboard.is_pressed(stop_key):
                 print('The surf recedes.')
                 return
+            elif keyboard.is_pressed('s'):
+                localize()
             
             pixels = rdxy()
             clr = paintz.index(pixels if pixels in paintz else (0,0,0))
@@ -679,6 +685,8 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
             
     def toggle_logos(self): #toggles guild war logos on and off
         self.visibility_state()
+        #self.color_xpath = driver.find_element(By.XPATH,'/html/body/div[3]/div[2]')
+        #print(self.color_xpath)
         if self.logos == True:
             for lg in range(10):
                 try:
@@ -745,12 +753,12 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.get_7()#map
         self.authid= None
         print('Ship construction complete.')
-        driver.get(f"https://pixelplace.io/7")
+        driver.get(f"https://pixelplace.io/{chart}")
         print(f'Studying sea charts.')
         self.treasure = (random.randint(0, self.image.size[0]),random.randint(0, self.image.size[1]))
         print(f'Possible treasure located: x:{self.treasure[0]}, y:{self.treasure[1]}')
         print("Setting course.")
-        driver.set_window_position(int(pyautogui.size()[0]/4), 0, windowHandle='current')
+        #driver.set_window_position(int(pyautogui.size()[0]/4), 0, windowHandle='current')
         while self.authid == None:
             try:
                 self.auth_data()
@@ -824,16 +832,16 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
     #end of class function
         
 # imports
-import requests
+import requests #pip install requests
 import os
-import json
-import keyboard
-import socketio
+import json 
+import keyboard #pip install keyboard
+import socketio #pip install python-socketio[client]==4.6.1
 import threading
 import math
 import random
 import time
-import urllib.request
+import urllib.request 
 import pyautogui
 import math
 import PIL
@@ -850,14 +858,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 #settings for Chromedriver to not show its errors on Sus Bot:
-options = webdriver.ChromeOptions()
-options.add_argument('--ignore-certificate-errors')
-options.add_argument("--disable-webgl")
-options.add_experimental_option("excludeSwitches", ["enable-logging"])
-driver = webdriver.Chrome(options=options)
+#options = webdriver.ChromeOptions()
+#options.add_argument('--ignore-certificate-errors')
+#options.add_argument("--disable-webgl")
+#options.add_experimental_option("excludeSwitches", ["enable-logging"])
+#driver = webdriver.Chrome(options=options)
 
 #if you want to use FireFox, remove the # from the next line (put # back again to go back to Chrome)
-#driver = webdriver.Firefox()
+driver = webdriver.Firefox()
 #and download geckodriver.exe from their official page for it:
 #https://github.com/mozilla/geckodriver/releases
 #and put the unzipped geckodriver.exe into the susbot folder
