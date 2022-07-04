@@ -60,7 +60,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         elif opt == 'increase':
             speed -= 0.001
             print(speed)
-        if speed < 0.01
+        if speed < 0.01:
             print(f"Going too fast now, defaulting to {default_speed} to prevent perma-ban.")
             speed = default_speed
             
