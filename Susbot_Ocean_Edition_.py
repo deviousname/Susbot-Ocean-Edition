@@ -7,8 +7,8 @@
 # Add improved TV function
 # Add more direction control for mongus
 # Improve effeciency of the water/terrain/color brush
-# Add line tool
-# Add shape tools (circles, polygons)
+# Add line tool------------- JUST ADDED, works, make a zone and press shift+n
+# Add shape tools (circles, polygons) ------ Circles are working, polygons not yet, but line tool can make them too
 # Add restoration tool again
 ############################
 
