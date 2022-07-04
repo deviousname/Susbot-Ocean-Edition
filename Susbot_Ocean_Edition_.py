@@ -883,14 +883,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 #settings for Chromedriver to not show its errors on Sus Bot:
-#options = webdriver.ChromeOptions()
-#options.add_argument('--ignore-certificate-errors')
-#options.add_argument("--disable-webgl")
-#options.add_experimental_option("excludeSwitches", ["enable-logging"])
-#driver = webdriver.Chrome(options=options)
+options = webdriver.ChromeOptions()
+options.add_argument('--ignore-certificate-errors')
+options.add_argument("--disable-webgl")
+options.add_experimental_option("excludeSwitches", ["enable-logging"])
+driver = webdriver.Chrome(options=options)
 
 #if you want to use FireFox, remove the # from the next line (put # back again to go back to Chrome)
-driver = webdriver.Firefox()
+#driver = webdriver.Firefox()
 #and download geckodriver.exe from their official page for it:
 #https://github.com/mozilla/geckodriver/releases
 #and put the unzipped geckodriver.exe into the susbot folder
