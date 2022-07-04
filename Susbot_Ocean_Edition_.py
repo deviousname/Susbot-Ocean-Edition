@@ -42,6 +42,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         keyboard.add_hotkey('shift+e', lambda: self.surf_zone('color'))
         keyboard.add_hotkey('shift+v', lambda: self.copypaste('copy'))
         keyboard.add_hotkey('shift+b', lambda: self.copypaste('paste'))
+        keyboard.add_hotkey('shift+n', lambda: self.line())
         keyboard.add_hotkey('shift+z', lambda: self.draw_circle(self.get_color_index(), 8, 'single'))
         keyboard.add_hotkey('alt+z', lambda: self.draw_circle(self.get_color_index(), 8, 'loop'))
         keyboard.add_hotkey("q", lambda: self.tree_style_2('single')) #tree
@@ -69,6 +70,26 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         print(self.circle_mode)
         time.sleep(1)
         
+    def line(self):
+        x1, y1 = self.txty[0], self.txty[1]
+        x2, y2 = self.bxby[0], self.bxby[1]
+        dx = x2 - x1
+        dy = y2 - y1
+        if abs(dx) > abs(dy):
+            step = abs(dx)
+        else:
+            step = abs(dy)
+        x_inc = dx / step
+        y_inc = dy / step
+        self.getcurcolor()
+        for i in range(step):
+            sio.emit('p',[int(x1), int(y1), paintz.index(self.curcol[0]), 1])
+            time.sleep(speed)
+            x1 += x_inc
+            y1 += y_inc
+
+    #self.line((0, 0), (200, 200))
+    
     def draw_circle(self, color, radius, option): #function in beta, still lots of work needed to clean code and optimize
         try:
             radius = ((self.bxby[0]-self.txty[0])+(self.bxby[1]-self.txty[1])) // 2
@@ -858,14 +879,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 #settings for Chromedriver to not show its errors on Sus Bot:
-options = webdriver.ChromeOptions()
-options.add_argument('--ignore-certificate-errors')
-options.add_argument("--disable-webgl")
-options.add_experimental_option("excludeSwitches", ["enable-logging"])
-driver = webdriver.Chrome(options=options)
+#options = webdriver.ChromeOptions()
+#options.add_argument('--ignore-certificate-errors')
+#options.add_argument("--disable-webgl")
+#options.add_experimental_option("excludeSwitches", ["enable-logging"])
+#driver = webdriver.Chrome(options=options)
 
 #if you want to use FireFox, remove the # from the next line (put # back again to go back to Chrome)
-#driver = webdriver.Firefox()
+driver = webdriver.Firefox()
 #and download geckodriver.exe from their official page for it:
 #https://github.com/mozilla/geckodriver/releases
 #and put the unzipped geckodriver.exe into the susbot folder
