@@ -87,8 +87,6 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
             time.sleep(speed)
             x1 += x_inc
             y1 += y_inc
-
-    #self.line((0, 0), (200, 200))
     
     def draw_circle(self, color, radius, option): #function in beta, still lots of work needed to clean code and optimize
         try:
