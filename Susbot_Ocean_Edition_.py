@@ -61,7 +61,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
             speed -= 0.001
             print(speed)
         if speed < 0.01
-            print(f"Going too fast now, defaulting to {default_speed} prevent perma ban.")
+            print(f"Going too fast now, defaulting to {default_speed} to prevent perma-ban.")
             speed = default_speed
             
     def get_color_index(self):
