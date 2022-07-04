@@ -7,7 +7,7 @@
 # Add improved TV function
 # Add more direction control for mongus
 # Improve effeciency of the water/terrain/color brush
-# Add line tool------------- JUST ADDED, works, make a zone and press shift+n
+# line tool------------- JUST ADDED, works, make a zone and press shift+n
 # Add shape tools (circles, polygons) ------ Circles are working, polygons not yet, but line tool can make them too
 # Add restoration tool again
 ############################
@@ -42,7 +42,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         keyboard.add_hotkey('shift+e', lambda: self.surf_zone('color'))
         keyboard.add_hotkey('shift+v', lambda: self.copypaste('copy'))
         keyboard.add_hotkey('shift+b', lambda: self.copypaste('paste'))
-        keyboard.add_hotkey('shift+n', lambda: self.line())
+        keyboard.add_hotkey('shift+n', lambda: self.line()) #make a zone then it will draw a line from corner to corner
         keyboard.add_hotkey('shift+z', lambda: self.draw_circle(self.get_color_index(), 8, 'single'))
         keyboard.add_hotkey('alt+z', lambda: self.draw_circle(self.get_color_index(), 8, 'loop'))
         keyboard.add_hotkey("q", lambda: self.tree_style_2('single')) #tree
@@ -60,6 +60,9 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         elif opt == 'increase':
             speed -= 0.001
             print(speed)
+        if speed < 0.01
+            print(f"Going too fast now, defaulting to {default_speed} prevent perma ban.")
+            speed = default_speed
             
     def get_color_index(self):
         self.getcurcolor()
@@ -71,22 +74,25 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         time.sleep(1)
         
     def line(self):
-        x1, y1 = self.txty[0], self.txty[1]
-        x2, y2 = self.bxby[0], self.bxby[1]
-        dx = x2 - x1
-        dy = y2 - y1
-        if abs(dx) > abs(dy):
-            step = abs(dx)
-        else:
-            step = abs(dy)
-        x_inc = dx / step
-        y_inc = dy / step
-        self.getcurcolor()
-        for i in range(step):
-            sio.emit('p',[int(x1), int(y1), paintz.index(self.curcol[0]), 1])
-            time.sleep(speed)
-            x1 += x_inc
-            y1 += y_inc
+        try:
+            x1, y1 = self.txty[0], self.txty[1]
+            x2, y2 = self.bxby[0], self.bxby[1]
+            dx = x2 - x1
+            dy = y2 - y1
+            if abs(dx) > abs(dy):
+                step = abs(dx)
+            else:
+                step = abs(dy)
+            x_inc = dx / step
+            y_inc = dy / step
+            self.getcurcolor()
+            for i in range(step):
+                sio.emit('p',[int(x1), int(y1), paintz.index(self.curcol[0]), 1])
+                time.sleep(speed)
+                x1 += x_inc
+                y1 += y_inc
+        except:
+            pass
     
     def draw_circle(self, color, radius, option): #function in beta, still lots of work needed to clean code and optimize
         try:
