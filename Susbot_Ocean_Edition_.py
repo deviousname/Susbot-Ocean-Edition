@@ -61,7 +61,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
             speed -= 0.001
             print(speed)
         if speed < 0.01:
-            print(f"Going too fast now, defaulting to {default_speed} to prevent perma-ban.")
+            print(f"Going too fast now, defaulting to {default_speed} prevent perma ban.")
             speed = default_speed
             
     def get_color_index(self):
@@ -74,6 +74,12 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         time.sleep(1)
         
     def line(self):
+        """ TODO:
+            Let's try to improve this by making it so each time you press a single
+            hotkey it will make a line from the previous hotkey press to this new
+            press instead of using the Zone to create lines, which will maky
+            polygons much quicker to create.
+        """
         try:
             x1, y1 = self.txty[0], self.txty[1]
             x2, y2 = self.bxby[0], self.bxby[1]
@@ -779,6 +785,7 @@ class Sus_Bot(): #---------Sus_Bot main class-----------
         self.authid= None
         print('Ship construction complete.')
         driver.get(f"https://pixelplace.io/{chart}")
+        driver.maximize_window()
         print(f'Studying sea charts.')
         self.treasure = (random.randint(0, self.image.size[0]),random.randint(0, self.image.size[1]))
         print(f'Possible treasure located: x:{self.treasure[0]}, y:{self.treasure[1]}')
