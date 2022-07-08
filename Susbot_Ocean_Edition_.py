@@ -139,7 +139,7 @@ class Sus_Bot(): #---------Sus_Bot---------
         
     #First class function after init is the ---> HOTKEYS <--- section, you can change them here easily...
         """
-        1. Just change the thing inside the first set of quiotes, for example: "f9"
+        1. Just change the thing inside the first set of quotes, for example: "f9"
         2... something that makes sense for you like "Ctrl+Shift+Alt+X+B+1" if you want.
         3. Or just something simple like "x" if you want it easy.
         4. The downside to that is that typing in chat will accidently activate some of the tools.
@@ -160,7 +160,7 @@ class Sus_Bot(): #---------Sus_Bot---------
         keyboard.add_hotkey('shift+e', lambda: self.surf_zone('color'))
         keyboard.add_hotkey('shift+v', lambda: self.copypaste('copy'))
         keyboard.add_hotkey('shift+b', lambda: self.copypaste('paste'))
-        keyboard.add_hotkey('shift+]', lambda: self.draw_bezier_line())
+        keyboard.add_hotkey('shift+}', lambda: self.draw_bezier_line())
         keyboard.add_hotkey('ctrl+z', lambda: self.draw_ellipse(self.get_color_index(), 'single'))
         keyboard.add_hotkey('shift+z', lambda: self.circle_solid(self.get_color_index(), 8, 'single'))
         keyboard.add_hotkey('alt+z', lambda: self.circle_solid(self.get_color_index(), 8, 'loop'))
@@ -169,7 +169,6 @@ class Sus_Bot(): #---------Sus_Bot---------
         keyboard.add_hotkey("shift+insert", lambda: self.change_speed('decrease'))
         keyboard.add_hotkey("shift+del", lambda: self.change_speed('increase'))
         keyboard.add_hotkey("shift+q", lambda: self.fill_tool())
-        keyboard.add_hotkey("f9", lambda: self.barnsley_fern())
         print('Hotkeys on.')    
 	
 	#now onto some of the functions that the hotkeys (and other parts of the code) will be using:
