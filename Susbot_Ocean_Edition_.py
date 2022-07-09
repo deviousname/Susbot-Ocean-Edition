@@ -19,7 +19,7 @@ default_speed = 0.02 # default
 max_speed = 0.016  # DANGER!!! *You can get autobanned for going too fast.
 
 #--|###############|--# Bot global speed:
-speed = max_speed # Set speed here
+speed = default_speed # Set speed here
 #--|###############|--# Recommend: speed = default_speed
 
 #Hotkeys you can rebind...
@@ -173,7 +173,7 @@ class Sus_Bot(): #---------Sus_Bot---------
 	
 	#now onto some of the functions that the hotkeys (and other parts of the code) will be using:
 	
-    #this function changes your speed either +0.001 or -0.001 and then cuts of the remaining weight
+    #this function changes your speed either +0.001 or -0.001 and then cuts off the remaining weight
     def change_speed(self, opt): #works great
         global speed
         if opt == 'decrease':
@@ -226,7 +226,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                 pass
             elif paintz.index(col) == color:
                 pass
-            else: #print( type(x := f"Ꭿ+ඞ+ꇺ equals: {int((Ꭿ:=.33)+(ඞ:=.34)+(ꇺ:=.31))}"),x,Ꭿ,ඞ,ꇺ, "should equal 0.98 but somehow thinks its zero now that's sus")
+            else:
                 sio.emit('p',[x, y, (color := self.oceaneer()) if self.ocean_activated == True else (color := self.get_color_index()), 1])
                 fill_list.append([x+1, y])
                 fill_list.append([x-1, y])
@@ -620,6 +620,60 @@ class Sus_Bot(): #---------Sus_Bot---------
             self.color = 30
         return self.color
 
+    ####    
+    def rdxy(self): #random direction for x, y
+        if random.random() > 0.5:
+            if random.random() > 0.5:
+                self.x += 1
+            else:
+                self.x -= 1
+        else:
+            if random.random() > 0.5:
+                self.y += 1
+            else:
+                self.y -= 1
+        try:
+            (returnal := self.cache[self.x, self.y])
+        except:
+            returnal = None
+            pass
+        return returnal if returnal in paintz else None
+    
+    def emit_and_sleep(self, loc): #this sub function runs the brush code inside a retiming timer to optimize the sleeps for brush speed settings
+        if loc == 'ocean':
+            self.oceaneer()
+        elif loc == 'nature':
+            self.terrain()
+        elif loc == 'color':
+            pass
+        else:
+            print('W-what?')
+            return
+        sio.emit("p",[self.x, self.y, self.color, 1])                
+        time.sleep(speed - (self.start - time.time()))  
+        self.start = time.time()#the idea is to start your timer as soon as the last sleep was finished and base your next sleeps duration off that 
+        
+    def bound_check(self): #this checks if you are inside your region
+        if [self.txty, self.bxby] != [None, None]:
+            if self.x < self.txty[0] or self.y < self.txty[1] or self.x > self.bxby[0] or self.y > self.bxby[1]:
+                try:
+                    self.get_coordinate()
+                    xy = self.x, self.y
+                except:
+                    self.x, self.y = xy
+        else:
+            try:
+                self.get_coordinate()
+                self.txty = self.x-default_square, self.y-default_square
+                self.bxby = self.x+default_square, self.y+default_square
+            except:
+                print('Try again.')
+                pass
+            
+    def localize(self):
+        self.get_coordinate()
+        xy = self.x, self.y
+        
     def surf_zone(self, loc): #lake and river brush
         print('The surf breaks.')
 
@@ -629,60 +683,6 @@ class Sus_Bot(): #---------Sus_Bot---------
         self.getcurcolor()
         self.color = paintz.index(self.curcol[0])
         xy = self.x, self.y
-        
-        def rdxy(): #random direction for x, y
-            if random.random() > 0.5:
-                if random.random() > 0.5:
-                    self.x += 1
-                else:
-                    self.x -= 1
-            else:
-                if random.random() > 0.5:
-                    self.y += 1
-                else:
-                    self.y -= 1
-            try:
-                (returnal := self.cache[self.x, self.y])
-            except:
-                returnal = None
-                pass
-            return returnal if returnal in paintz else None
-        
-        def emit_and_sleep(loc): #this sub function runs the brush code inside a retiming timer to optimize the sleeps for brush speed settings
-            if loc == 'ocean':
-                self.oceaneer()
-            elif loc == 'nature':
-                self.terrain()
-            elif loc == 'color':
-                pass
-            else:
-                print('W-what?')
-                return
-            sio.emit("p",[self.x, self.y, self.color, 1])                
-            time.sleep(speed - (self.start - time.time()))  
-            self.start = time.time()#the idea is to start your timer as soon as the last sleep was finished and base your next sleeps duration off that 
-            
-        def bound_check(): #this checks if you are inside your region
-            if [self.txty, self.bxby] != [None, None]:
-                if self.x < self.txty[0] or self.y < self.txty[1] or self.x > self.bxby[0] or self.y > self.bxby[1]:
-                    try:
-                        self.get_coordinate()
-                        xy = self.x, self.y
-                    except:
-                        self.x, self.y = xy
-            else:
-                try:
-                    self.get_coordinate()
-                    self.txty = self.x-default_square, self.y-default_square
-                    self.bxby = self.x+default_square, self.y+default_square
-                except:
-                    print('Try again.')
-                    pass
-                
-        def localize():
-            self.get_coordinate()
-            xy = self.x, self.y
-            
         self.start = time.time()       
         while True: 
             
@@ -690,24 +690,24 @@ class Sus_Bot(): #---------Sus_Bot---------
                 print('The surf recedes.')
                 return
             elif keyboard.is_pressed('s'):
-                localize()
+                self.localize()
             
-            pixels = rdxy()
+            pixels = self.rdxy()
             clr = paintz.index(pixels if pixels in paintz else (0,0,0))
             
             if self.colorfilter != [None, None, None, None, None, None, None, None, None, None]:
                 if pixels in self.colorfilter:
-                    emit_and_sleep(loc)
-                    bound_check()
+                    self.emit_and_sleep(loc)
+                    self.bound_check()
             else:
                 if loc != 'color':
                     if clr not in terrain_tiles + [self.color] + [paintz.index(k) for k in trees_and_oceans]:
-                        emit_and_sleep(loc)
-                        bound_check()
+                        self.emit_and_sleep(loc)
+                        self.bound_check()
                 else:
                     if pixels != paintz[self.color]:
-                        emit_and_sleep(loc)
-                        bound_check()
+                        self.emit_and_sleep(loc)
+                        self.bound_check()
                 
     def copypaste(self, option): #this is the copy/paster
         try:
@@ -985,7 +985,7 @@ def cy_cols(a): #50/50 chance to go forward or backward
         a = 0
     return a #"return" "a" means that you can say the function itself is equal to something, for example "variable = cy_cols(1)" has a chance to equal 0 or 2
 #and done, all is left are the tips, I tried to make the feel like something a pirate on the high seas might find, since this is Sus Bot Ocean Edition. Cya!
-#ps if you use the bucket fill tool, you can also use colorfilters with it to black its path.
+#ps if you use the bucket fill tool, you can also use colorfilters with it to block its path.
 chrono = """A final word:
  His name went unmentioned.
  Points, player...
