@@ -31,7 +31,7 @@ foresty_hotkey = 'Shift+R' # this one is for planting a forest inside your zone,
 
 unit_measurement = 'mile' #used for RP dialog, you can change this to anything and it will call a pixels length that
 #such as 'pixel' or 'kilometer' or 'icecream cakes' it doesn't matter, as long as it is a string or something, hmm maybe int() would work there too?
-
+    
 #(more global variables toward very bottom of script)
 # Main class "Sus_Bot":
 class Sus_Bot(): #---------Sus_Bot---------
@@ -43,14 +43,18 @@ class Sus_Bot(): #---------Sus_Bot---------
         print("Building ship...")
         self.work_order = ()
         self.txty, self.bxby = None, None #For tree zone thing, and these equal None... for now...
+        self.default_square = 4//2 #incase you dont have a zone in mind
         self.x, self.y = 0, 0 #player coordiantes
         self.lastx, self.lasty = self.x, self.y
         self.colorfilter = [None, None, None, None, None, None, None, None, None, None]
+        self.COLOR_VARIABLE = 5
         self.logos = True
         self.zone_commands = False
         self.forestry_permit = False
         self.ocean_activated = False
         self.count = 0
+        self.print_text = "on" 
+        self.switch = False
         self.exception = 0
         self.color = random.randint(0, 39)
         self.start = None #this is needed for the timing system that decides how long to sleep between each pixel placement
@@ -76,9 +80,9 @@ class Sus_Bot(): #---------Sus_Bot---------
                 else:
                     print(f'Found island...')
             except: #if we dont have the cookies the above code excepts into this:
-                print('Another day passes...') 
+                print('Another day passes...')
                 time.sleep(7) #sleep then send back to start of cookie check loop
-                pass 
+                pass
         print('Searching for treasure...') #got the cookies, now we can look for booty
         treasure = self.cache[self.treasure[0],self.treasure[1]] #treasure chest yarr ye matey
         if treasure == (204,204,204): #if its that border/ocean color, then no treasure
@@ -104,7 +108,7 @@ class Sus_Bot(): #---------Sus_Bot---------
         print('----CONTROLS----')
         print('')
         print('d: Mongus')
-        print('w: Plant Tree')        
+        print('w: Plant Tree')
         print('')
         print("Hold 'v' and drag your mouse to create a zone")
         print("Hold 'a' and drag your mouse to create a line")
@@ -136,7 +140,7 @@ class Sus_Bot(): #---------Sus_Bot---------
         #init complete
         # "Fun"ction Time
         # Ꭿ+ඞ=ꇺ
-        
+
     #First class function after init is the ---> HOTKEYS <--- section, you can change them here easily...
         """
         1. Just change the thing inside the first set of quotes, for example: "f9"
@@ -145,7 +149,7 @@ class Sus_Bot(): #---------Sus_Bot---------
         4. The downside to that is that typing in chat will accidently activate some of the tools.
         5. TODO: Add chat selection detection to temporarily disable the hotkeys while typing.
         """
-	
+
 	# here they are, experiment with what works:
     #hotkey binds:
     def hotkeys(self):
@@ -160,7 +164,7 @@ class Sus_Bot(): #---------Sus_Bot---------
         keyboard.add_hotkey('shift+e', lambda: self.surf_zone('color'))
         keyboard.add_hotkey('shift+v', lambda: self.copypaste('copy'))
         keyboard.add_hotkey('shift+b', lambda: self.copypaste('paste'))
-        keyboard.add_hotkey('shift+}', lambda: self.draw_bezier_line())
+        keyboard.add_hotkey('[', lambda: self.draw_bezier_line())
         keyboard.add_hotkey('ctrl+z', lambda: self.draw_ellipse(self.get_color_index(), 'single'))
         keyboard.add_hotkey('shift+z', lambda: self.circle_solid(self.get_color_index(), 8, 'single'))
         keyboard.add_hotkey('alt+z', lambda: self.circle_solid(self.get_color_index(), 8, 'loop'))
@@ -169,10 +173,11 @@ class Sus_Bot(): #---------Sus_Bot---------
         keyboard.add_hotkey("shift+insert", lambda: self.change_speed('decrease'))
         keyboard.add_hotkey("shift+del", lambda: self.change_speed('increase'))
         keyboard.add_hotkey("shift+q", lambda: self.fill_tool())
-        print('Hotkeys on.')    
-	
+        keyboard.add_hotkey("f9", lambda: self.switch_off_on_rp_text())
+        print('Hotkeys on.')
+
 	#now onto some of the functions that the hotkeys (and other parts of the code) will be using:
-	
+
     #this function changes your speed either +0.001 or -0.001 and then cuts off the remaining weight
     def change_speed(self, opt): #works great
         global speed
@@ -184,15 +189,21 @@ class Sus_Bot(): #---------Sus_Bot---------
             speed -= 0.001
             speed = float('%.3f'%speed)
             print(speed)
-        if speed < 0.01:
+        if speed < 0.015:
             print(f"Going too fast now, defaulting to {default_speed} to prevent perma ban.")
             speed = default_speed
-
+            
     # can return currently equipped color as int() in 0 to 38 range, you can use this in place of int when sending color to pixelplace
     def get_color_index(self): #TODO: should combine this with self.getcurcolor() into single function
         self.getcurcolor()
         return paintz.index(self.curcol[0])
-
+    
+    def switch_off_on_rp_text(self):
+        if self.print_text == "on":
+            self.print_text = "off"
+        else:
+            self.print_text = "on"
+    
     #fills an area with your selected color which ends when it fills
     # all areas within selected color + colorfilters + ocean/border color boundary
     def fill_tool(self): #works great
@@ -201,32 +212,31 @@ class Sus_Bot(): #---------Sus_Bot---------
         color = self.get_color_index()
         fill_list = []
         fill_list.append([self.x, self.y])
-        print('Filling.')
         self.start = time.time()
-
-        #self.oceaneer() #returns self.color as a random blue color
-        
+        if self.print_text == "on":
+            print('Emptying bucket of paint.')
         while len(fill_list) > 0:
             if keyboard.is_pressed(stop_key):
                 break
             if keyboard.is_pressed('s'): #this nested if statement switches the ocean brush on/off during fill use
-                if self.ocean_activated == False:             
+                if self.ocean_activated == False:
                     self.ocean_activated = True
                     print('Ocean mode...')
                 else:
                     self.ocean_activated = False
                     print('Color mode...')
-                time.sleep(.25)
-            if (r := random.random()) < .042:
-                random.shuffle(fill_list)
-            #elif r < .01:
-            #    fill_list.reverse()
+            if keyboard.is_pressed('f9'):
+                self.switch_off_on_rp_text()
+            if keyboard.is_pressed('shift+q'):
+                x, y = self.get_coordinate()
             x, y = fill_list.pop()
             if (col:=self.cache[x, y]) not in paintz or col in self.colorfilter:
                 pass
             elif paintz.index(col) == color:
                 pass
             else:
+                if keyboard.is_pressed('shift+q'):
+                    x, y = self.get_coordinate()
                 sio.emit('p',[x, y, (color := self.oceaneer()) if self.ocean_activated == True else (color := self.get_color_index()), 1])
                 fill_list.append([x+1, y])
                 fill_list.append([x-1, y])
@@ -234,28 +244,65 @@ class Sus_Bot(): #---------Sus_Bot---------
                 fill_list.append([x, y-1])
                 time.sleep(speed - (self.start - time.time()))
                 self.start = time.time()
-        print('Done filling.')
-    
-    def draw_bezier_line(self): #needs intuitive control improvements
-        try:
-            self.get_coordinate()
-            start = [self.txty[0], self.txty[1]]
-            end = [self.bxby[0], self.bxby[1]]
-            control = [self.x, self.y]
-            points = []
-            resolution = ((self.bxby[1] - self.txty[1]) + (self.bxby[0] - self.txty[0]) // 2)
-            resolution += ((abs(self.x - self.txty[0]) + abs(self.y - self.txty[1])) // 2)
-            for i in range(resolution):
-                t = i / resolution
-                x = (1-t)**2 * start[0] + 2 * t * (1-t) * control[0] + t**2 * end[0]
-                y = (1-t)**2 * start[1] + 2 * t * (1-t) * control[1] + t**2 * end[1]
-                points.append([int(x), int(y)])      
-            for i in points:
-                sio.emit('p',[i[0], i[1], self.get_color_index(), 1])
-                time.sleep(speed)
-        except:
-            pass
+        if (r := random.random()) < .0042:
+            random.shuffle(fill_list)
+        elif r > 1-.0042:
+            fill_list.reverse()
+        if self.print_text == "on":
+            print("It's empty now.")
+            print('Refilling...')
+
+    def draw_bezier_line(self): #lute/banjo, pirate instrument
+        print('Charging cannon...')
+        self.COLOR_VARIABLE = self.get_color_index()
+        notes = tuple(('do', 'doe', 're', 'ray', 'mi', 'me', 'fa', 'fah', 'sol', 'soul', 'la', 'la', 'si', 'see', 'ti'))
+        print(random.choice(notes))
+        def distance(x1, y1, x2, y2):
+            return int(math.sqrt((x2 - x1)**2 + (y2 - y1)**2))
         
+        #first twang
+        self.get_coordinate()
+        start = [self.x, self.y]
+        
+        #wait for second twang
+        while True: #press and hold [ and drag mouse and release [
+            if not keyboard.is_pressed('['):
+                self.get_coordinate()
+                end = [self.x, self.y]
+                print(random.choice(notes))
+                break
+            
+        #then press ] at a different mouse location
+        #wait for third twang
+        while True:
+            if keyboard.is_pressed(']'):
+                self.get_coordinate()
+                control = [self.x, self.y]
+                print(random.choice(notes))
+                break
+        print('Fire !')
+        points = []
+
+        distance1 = distance(start[0],start[1], end[0],end[1])
+        twang_distance = (((start[0]+end[0])/2)+((start[1] + end[1])/2))/2
+        twang_distance = distance(twang_distance, twang_distance, twang_distance+distance1, twang_distance-distance1)
+        twang_distance += twang_distance // 2
+
+        for i in range(int(twang_distance)):
+            t = i / twang_distance
+            x = (1-t)**2 * start[0] + 2 * t * (1-t) * control[0] + t**2 * end[0]
+            y = (1-t)**2 * start[1] + 2 * t * (1-t) * control[1] + t**2 * end[1]
+            points.append([int(x), int(y)])
+        self.start=time.time()
+        for i in points:
+            if keyboard.is_pressed(']'):
+                self.COLOR_VARIABLE = self.change_color_during_circle()
+            if self.cache[i[0], i[1]] not in [(204,204,204)] + self.colorfilter + [paintz[self.COLOR_VARIABLE]]:
+                sio.emit('p',[i[0], i[1], self.COLOR_VARIABLE, 1])
+                time.sleep(speed - (self.start - time.time()))
+                self.start=time.time()
+        print(f'{twang_distance} pirates {random.choice(["cheered for you.","applauded.","rocked out.","did the sea shanty.", "were obliterated by cannon fire.", "sailed the seven seas.",])}')
+
     def line(self): #works great
         self.get_coordinate()
         x1, y1 = self.x, self.y
@@ -283,7 +330,9 @@ class Sus_Bot(): #---------Sus_Bot---------
             x1 += x_inc
             y1 += y_inc
         print(f"Created {step+1} {unit_measurement} long line.")
-            
+
+
+
     def draw_ellipse(self, color, option): #needs intuitive control improvements
         try:
             rad_x = (self.bxby[0]-self.txty[0]) // 2
@@ -299,7 +348,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                         for y in range(self.y - rad_y, self.y + rad_y):
                             if (x - self.x) ** 2 / rad_x ** 2 + (y - self.y) ** 2 / rad_y ** 2 <= 1:
                                 ellipse_list+=[[x, y],]
-                    ellipse_list.sort(key=lambda x: (x[0] - 100) ** 2 + (x[1] - 100) ** 2) #skewed print            
+                    ellipse_list.sort(key=lambda x: (x[0] - 100) ** 2 + (x[1] - 100) ** 2) #skewed print
                     for i in ellipse_list:
                         try:
                             clr = paintz.index(self.cache[i[0], i[1]])
@@ -316,7 +365,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                     for y in range(self.y - rad_y, self.y + rad_y):
                         if (x - self.x) ** 2 / rad_x ** 2 + (y - self.y) ** 2 / rad_y ** 2 <= 1:
                             ellipse_list+=[[x, y],]
-                ellipse_list.sort(key=lambda x: (x[0] - 100) ** 2 + (x[1] - 100) ** 2) #skewed print           
+                ellipse_list.sort(key=lambda x: (x[0] - 100) ** 2 + (x[1] - 100) ** 2) #skewed print
                 for i in ellipse_list:
                     try:
                         clr = paintz.index(self.cache[i[0], i[1]])
@@ -329,7 +378,17 @@ class Sus_Bot(): #---------Sus_Bot---------
                         break
         except:
             pass
-            
+    #function for circle outline to use to change color
+    def change_color_during_circle(self): #switch color function
+        if self.switch == False:
+            self.COLOR_VARIABLE = cy_cols(self.oceaneer())
+            self.switch = True
+        elif self.switch == True:
+            self.COLOR_VARIABLE = cy_cols(self.get_color_index())
+            self.switch = False
+        return self.COLOR_VARIABLE
+
+    #make a circle outline by dragging the hotkey default: q and releasing at different mouse location
     def circle_outline(self): #works great
         self.get_coordinate()
         x2, y2 = self.x, self.y
@@ -345,51 +404,65 @@ class Sus_Bot(): #---------Sus_Bot---------
         dy = 1
         err = dx - (r << 1)
         self.getcurcolor()
-        while x >= y:
+        self.COLOR_VARIABLE = self.get_color_index()
+        self.start = time.time()
+        while x >= y:      
+            sio.emit('p',[x1 + x, y1 + y, self.COLOR_VARIABLE, 1])
+            time.sleep(speed - (self.start - time.time()))
+            if keyboard.is_pressed('s'): #switch color with this hotkey during use
+                self.change_color_during_circle() 
+            self.start = time.time()
+            sio.emit('p',[x1 + y, y1 + x, self.COLOR_VARIABLE, 1])
+            time.sleep(speed - (self.start - time.time()))
+            self.start = time.time()
+            sio.emit('p',[x1 - y, y1 + x, self.COLOR_VARIABLE, 1])
+            time.sleep(speed - (self.start - time.time()))
+            self.start = time.time()
             if keyboard.is_pressed(stop_key):
                 break
-            sio.emit('p',[x1 + x, y1 + y, self.get_color_index(), 1])
-            time.sleep(speed)
-            sio.emit('p',[x1 + y, y1 + x, self.get_color_index(), 1])
-            time.sleep(speed)
-            sio.emit('p',[x1 - y, y1 + x, self.get_color_index(), 1])
-            time.sleep(speed)
-            sio.emit('p',[x1 - x, y1 + y, self.get_color_index(), 1])
-            time.sleep(speed)
-            sio.emit('p',[x1 - x, y1 - y, self.get_color_index(), 1])
-            time.sleep(speed)
-            sio.emit('p',[x1 - y, y1 - x, self.get_color_index(), 1])
-            time.sleep(speed)
-            sio.emit('p',[x1 + y, y1 - x, self.get_color_index(), 1])
-            time.sleep(speed)
-            sio.emit('p',[x1 + x, y1 - y, self.get_color_index(), 1])
-            time.sleep(speed)
-            if err <= 0:
-                y += 1
-                err += dy
-                dy += 2
+            sio.emit('p',[x1 - x, y1 + y, self.COLOR_VARIABLE, 1])
+            time.sleep(speed - (self.start - time.time()))
+            self.start = time.time()
+            sio.emit('p',[x1 - x, y1 - y, self.COLOR_VARIABLE, 1])
+            time.sleep(speed - (self.start - time.time()))
+            self.start = time.time()
             if err > 0:
                 x -= 1
                 dx += 2
                 err += dx - (r << 1)
-        
+            sio.emit('p',[x1 - y, y1 - x, self.COLOR_VARIABLE, 1])
+            time.sleep(speed - (self.start - time.time()))
+            self.start = time.time()
+            sio.emit('p',[x1 + y, y1 - x, self.COLOR_VARIABLE, 1])
+            time.sleep(speed - (self.start - time.time()))
+            self.start = time.time()
+            if err <= 0:
+                y += 1
+                err += dy
+                dy += 2
+            sio.emit('p',[x1 + x, y1 - y, self.COLOR_VARIABLE, 1])
+            self.start - time.time()
+
     def circle_solid(self, color, radius, option): #needs intuitive control improvements
         try:
             radius = ((self.bxby[0]-self.txty[0])+(self.bxby[1]-self.txty[1])) // 2
         except:
-            pass        
+            pass
         self.get_coordinate()
         if option == 'loop':
             print('loop')
+            circle_list = []
             while True:
                 if keyboard.is_pressed(stop_key):
                     break
-                circle_list = []
+                if keyboard.is_pressed('q'):
+                    next(circle_m)
                 for x in range(self.x - radius, self.x + radius):
                     for y in range(self.y - radius, self.y + radius):
                         if (x - self.x) ** 2 + (y - self.y) ** 2 <= radius ** 2:
-                            circle_list+=[[x, y],]             
-                circle_list.sort(key=lambda x: (x[0] - 100) ** 2 + (x[1] - 100) ** 2) #skewed print           
+                            circle_list+=[[x, y],]
+                circle_list.sort(key=lambda x: (x[0] - 50) ** 2 + (x[1] - 50) ** 2) #skewed print
+                self.start = time.time()
                 for i in circle_list:
                     try:
                         clr = paintz.index(self.cache[i[0], i[1]])
@@ -397,16 +470,19 @@ class Sus_Bot(): #---------Sus_Bot---------
                         clr = color
                     if clr != color:
                         sio.emit('p',[i[0], i[1], abs(self.get_color_index()-clr), 1])
-                        time.sleep(speed)
+                        time.sleep(speed - (self.start - time.time()))
+                        self.start = time.time()
                     if keyboard.is_pressed(stop_key):
                         break
         else:
             circle_list = []
+            
             for x in range(self.x - radius, self.x + radius):
                 for y in range(self.y - radius, self.y + radius):
                     if (x - self.x) ** 2 + (y - self.y) ** 2 <= radius ** 2:
                         circle_list+=[[x, y],]
-            circle_list.sort(key=lambda x: (x[0] - 100) ** 2 + (x[1] - 100) ** 2) #skewed print             
+            circle_list.sort(key=lambda x: (x[0] - 50) ** 2 + (x[1] - 50) ** 2) #skewed print
+            self.start = time.time()
             for i in circle_list:
                 try:
                     clr = paintz.index(self.cache[i[0], i[1]])
@@ -414,10 +490,11 @@ class Sus_Bot(): #---------Sus_Bot---------
                     clr = color
                 if clr != color:
                     sio.emit('p',[i[0], i[1], abs(self.get_color_index()-clr), 1])
-                    time.sleep(speed)
+                    time.sleep(speed - (self.start - time.time()))
+                    self.start = time.time()
                 if keyboard.is_pressed(stop_key):
                     break
-                
+
     # Trees, 3 types so far...
     # Style 1 (small tree)
     def tree_style_1(self, kind):
@@ -431,7 +508,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             self.x, self.y = x, y
         trunk=next(trunks_cycle)
         for a in range(4):
-            tree_order+=([x,y-a,trunk,1],) 
+            tree_order+=([x,y-a,trunk,1],)
         leaf=next(leaves_cycle)
         y -= a
         for b in range(3):
@@ -454,7 +531,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                     sio.emit("p", Y)
                     time.sleep(speed - (self.start - time.time()))
                     self.start = time.time()
-                    
+
     # Style 2 (medium tree)
     def tree_style_2(self, kind):
         self.start = time.time()
@@ -467,7 +544,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             self.x, self.y = x, y
         trunk=next(trunks_cycle)
         for a in range(5):
-            tree_order+=([x,y-a,trunk,1],) 
+            tree_order+=([x,y-a,trunk,1],)
         leaf=next(leaves_cycle)
         y -= a
         for b in range(3):
@@ -493,7 +570,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                     sio.emit("p", Y)
                     time.sleep(speed - (self.start - time.time()))
                     self.start = time.time()
-                    
+
     # Style 3 (large tree)
     def tree_style_3(self, kind):
         self.start = time.time()
@@ -506,7 +583,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             self.x, self.y = x, y
         trunk=next(trunks_cycle)
         for a in range(6):
-            tree_order+=([x,y-a,trunk,1],) 
+            tree_order+=([x,y-a,trunk,1],)
         leaf=next(leaves_cycle)
         y -= a
         for b in range(3):
@@ -528,7 +605,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                 sio.emit("p", Y)
                 time.sleep(speed - (self.start - time.time()))
                 self.start = time.time()
-                
+
     def forest(self, option): #draws a forest
         try:
             if option != 'single':
@@ -550,7 +627,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             print('Do not have forestry permit yet.')
         if self.primeCheck(self.count) == "Prime":
             print(f"#{self.count}")
-        
+
     def primeCheck(self, n): #checks if prime int
         # 0, 1, even numbers greater than 2 are NOT PRIME
         if n==1 or n==0 or (n % 2 == 0 and n > 2):
@@ -563,7 +640,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                 if n%i == 0:
                     return "Not prime"
             return "Prime"
-        
+
     def amogus(self, loc1, loc2, col): #lil sussy baka, or crewmate, who is to tell?
         try:
             self.start = time.time()
@@ -573,13 +650,13 @@ class Sus_Bot(): #---------Sus_Bot---------
                 X, Y = loc1, loc2
             else:
                 self.get_coordinate()
-                X, Y = self.x, self.y            
+                X, Y = self.x, self.y
             if X >= self.lastx: #right facing
                 for n in range(2):
                     sio.emit("p",[X+(n*self.z),Y,37,1])
-                    time.sleep(speed - (self.start - time.time())) 
-                    self.start = time.time() 
-                x, y = X + self.z, Y + 2        
+                    time.sleep(speed - (self.start - time.time()))
+                    self.start = time.time()
+                x, y = X + self.z, Y + 2
                 body=[(x,y),(x,y-1),(x-(self.z*1),y-1),(x-(self.z*2),y),(x-(self.z*2),y-1),(x-(self.z*3),y-1),
                       (x-(self.z*3),y-2),(x-(self.z*2),y-2),(x-(self.z*2),y-3),(x-(self.z*1),y-3),(x,y-3)]
                 c = cy_cols(paintz.index(self.curcol[0]))
@@ -587,27 +664,27 @@ class Sus_Bot(): #---------Sus_Bot---------
                 for n in range(2):
                     sio.emit("p",[X-(n*self.z),Y,36,1])
                     time.sleep(speed)
-                x, y = X-1, Y + 2        
+                x, y = X-1, Y + 2
                 body=[(x,y),(x,y-1),(x+(self.z*1),y-1),(x+(self.z*2),y),(x+(self.z*2),y-1),(x+(self.z*3),y-1),
                   (x+(self.z*3),y-2),(x+(self.z*2),y-2),(x+(self.z*2),y-3),(x+(self.z*1),y-3),(x,y-3)]
-                c = cy_cols(paintz.index(self.curcol[0]))             
+                c = cy_cols(paintz.index(self.curcol[0]))
             for n in body:
                 sio.emit("p",[n[0],n[1],c,1])
                 time.sleep(speed - (self.start - time.time()))
-                self.start = time.time() 
+                self.start = time.time()
             self.lastx, self.lasty = X, Y
         except:
             print('*vented*')
             pass
-        
+
     def terrain(self): #cycles terrain colors
         r = random.random()
         if r > .7:
             self.color = next(terrain_cy)
-        elif r < .3: 
+        elif r < .3:
             self.color = next(reverse_terrain_cy)
         return self.color
-            
+
     def oceaneer(self): #cycles ocean colors
         r = random.random()
         if r > .7:
@@ -620,7 +697,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             self.color = 30
         return self.color
 
-    ####    
+    ####
     def rdxy(self): #random direction for x, y
         if random.random() > 0.5:
             if random.random() > 0.5:
@@ -638,7 +715,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             returnal = None
             pass
         return returnal if returnal in paintz else None
-    
+
     def emit_and_sleep(self, loc): #this sub function runs the brush code inside a retiming timer to optimize the sleeps for brush speed settings
         if loc == 'ocean':
             self.oceaneer()
@@ -649,10 +726,10 @@ class Sus_Bot(): #---------Sus_Bot---------
         else:
             print('W-what?')
             return
-        sio.emit("p",[self.x, self.y, self.color, 1])                
-        time.sleep(speed - (self.start - time.time()))  
-        self.start = time.time()#the idea is to start your timer as soon as the last sleep was finished and base your next sleeps duration off that 
-        
+        sio.emit("p",[self.x, self.y, self.color, 1])
+        time.sleep(speed - (self.start - time.time()))
+        self.start = time.time()#the idea is to start your timer as soon as the last sleep was finished and base your next sleeps duration off that
+
     def bound_check(self): #this checks if you are inside your region
         if [self.txty, self.bxby] != [None, None]:
             if self.x < self.txty[0] or self.y < self.txty[1] or self.x > self.bxby[0] or self.y > self.bxby[1]:
@@ -664,37 +741,36 @@ class Sus_Bot(): #---------Sus_Bot---------
         else:
             try:
                 self.get_coordinate()
-                self.txty = self.x-default_square, self.y-default_square
-                self.bxby = self.x+default_square, self.y+default_square
+                self.txty = self.x-self.default_square, self.y-self.default_square
+                self.bxby = self.x+self.default_square, self.y+self.default_square
             except:
                 print('Try again.')
                 pass
-            
+
     def localize(self):
         self.get_coordinate()
         xy = self.x, self.y
-        
+
     def surf_zone(self, loc): #lake and river brush
         print('The surf breaks.')
 
         #init variables
-        default_square = 4//2 #incase you dont have a zone in mind
         self.get_coordinate()
         self.getcurcolor()
         self.color = paintz.index(self.curcol[0])
         xy = self.x, self.y
-        self.start = time.time()       
-        while True: 
-            
+        self.start = time.time()
+        while True:
+
             if keyboard.is_pressed(stop_key):
                 print('The surf recedes.')
                 return
             elif keyboard.is_pressed('s'):
                 self.localize()
-            
+
             pixels = self.rdxy()
             clr = paintz.index(pixels if pixels in paintz else (0,0,0))
-            
+
             if self.colorfilter != [None, None, None, None, None, None, None, None, None, None]:
                 if pixels in self.colorfilter:
                     self.emit_and_sleep(loc)
@@ -708,7 +784,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                     if pixels != paintz[self.color]:
                         self.emit_and_sleep(loc)
                         self.bound_check()
-                
+
     def copypaste(self, option): #this is the copy/paster
         try:
             if option == "copy": #-----copy section-----#
@@ -724,7 +800,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                             if self.cache[X, Y] not in self.colorfilter + [(204,204,204)]:
                                 self.work_order += ((X-self.txty[0]-cx, Y-self.txty[1]-cy, paintz.index(self.cache[X, Y])),)
                     print('Done.')
-                    
+
             elif option == "paste": #-----paste section-----#
                 if self.work_order != ():
                     self.get_coordinate()
@@ -746,7 +822,7 @@ class Sus_Bot(): #---------Sus_Bot---------
         except:
             print('Failed.')
             pass
-    
+
     def zone(self): #zone constructor
         self.get_coordinate()
         self.txty = self.x, self.y
@@ -763,14 +839,14 @@ class Sus_Bot(): #---------Sus_Bot---------
                 print('Issued a forestry permit.')
         else:
             print ('Zoned out.')
-        
+
     def get_coordinate(self):#check the coordinate of where your cursor is on the selenium pixelplace site
         try:
             self.x, self.y = make_tuple(driver.find_element(By.XPATH,'/html/body/div[3]/div[4]').text)
             return self.x, self.y
         except:
              pass
-        
+
     def onkeypress(self, event): #whatever 1-9 key you press will allow you to equip a color for filter
         if event.name == '1':
             self.getcurcolorhotkey(1)
@@ -794,7 +870,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             self.getcurcolorhotkey(0)
         elif event.name in ['`', '~']:
             self.removefilters()
-            
+
     def getcurcolor(self): #gets the currently equipped color as a tuple
         try:
             self.visibility_state()
@@ -804,7 +880,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             self.curcol = [make_tuple(self.curcol)]
         except:
             pass
-        
+
     def getcurcolorhotkey(self, col): #equips color to 1-9 slots
         try:
             self.visibility_state()
@@ -817,11 +893,11 @@ class Sus_Bot(): #---------Sus_Bot---------
             return
         except:
             pass
-    
+
     def removefilters(self): #removes equipped colors on the 1-9 and 0 slots
         self.colorfilter[0:] = None, None, None, None, None, None, None, None, None, None
         print("Filters dequipped.")
-        
+
     def visibility_state(self): #ensures the current tab is correctly loaded for xpath css code stuff
         try:
             vis = driver.execute_script("return document.visibilityState") == "visible"
@@ -837,7 +913,7 @@ class Sus_Bot(): #---------Sus_Bot---------
             self.curcol = str(driver.find_element(By.XPATH,'/html/body/div[3]/div[2]').get_attribute("style"))
         else:
             self.curcol = str(driver.find_element(By.XPATH,'/html/body/div[3]/div[2]').get_attribute("style"))
-        
+
     def toggle_logos(self): #toggles guild war logos on and off
         self.visibility_state()
         #self.color_xpath = driver.find_element(By.XPATH,'/html/body/div[3]/div[2]')
@@ -859,53 +935,53 @@ class Sus_Bot(): #---------Sus_Bot---------
                     pass
             self.logos = True
         time.sleep(.5)
-        
+
     def get_7(self): #get the current selected map for the cache
         with open(f'{chart}.png', 'wb') as f:
             f.write(requests.get(f'https://pixelplace.io/canvas/{chart}.png?t={random.randint(9999,99999)}').content)
         self.image = PIL.Image.open(f'{chart}.png').convert('RGB')
         self.cache = self.image.load()
-        
+
     def connection(self): #two different functions to maintain during connection, the cookies, and the pixel cache
-        sio.connect('https://pixelplace.io', transports=['websocket'])        
+        sio.connect('https://pixelplace.io', transports=['websocket'])
         @sio.event
         def connect():#socket connection method for pixelplace which uses the cookis you get from auth_data()
             sio.emit("init",{"authKey":f"{self.authkey}","authToken":f"{self.authtoken}","authId":f"{self.authid}","boardId":chart})
             threading.Timer(15, connect).start()
-            
-        @sio.on("p") 
+
+        @sio.on("p")
         def update_pixels(p: tuple): #this collects all the pixels people draw on the map into self.cache so your computer can access it quickly for the painting features
             for i in p:
                 try:
                     self.cache[i[0], i[1]] = paintz[i[2]]
                 except:
                     pass
-    
+
     def auth_data(self): #get pixelplace cookies to use for maintaining socket connection
         self.authkey = driver.get_cookie("authKey").get('value')
         self.authtoken = driver.get_cookie("authToken").get('value')
         self.authid = driver.get_cookie("authId").get('value')
-        
+
     #end of class function
-        
+
 # imports
 import requests #pip install requests
 import os
-import json 
+import json
 import keyboard #pip install keyboard
 import socketio #pip install python-socketio[client]==4.6.1
 import threading
 import math
 import random
 import time
-import urllib.request 
+import urllib.request
 import pyautogui
 import math
 import PIL
 import numpy as np
 import itertools
 from itertools import cycle
-from numpy import sqrt 
+from numpy import sqrt
 from PIL import Image, ImageGrab, ImageDraw, ImageFont
 from ast import literal_eval as make_tuple
 from selenium import webdriver
@@ -965,7 +1041,7 @@ circle_modes = ['skewed','dot']
 circle_m = cycle(circle_modes)
 
 def cy_cols(a): #50/50 chance to go forward or backward
-    if random.random() > .5: 
+    if random.random() > .5:
         a += 1
         if a == 6:
             a = 4
@@ -976,7 +1052,7 @@ def cy_cols(a): #50/50 chance to go forward or backward
         if a == 5:
             a = 7
         elif a == 38:
-            a = 1    
+            a = 1
     if a > 38:
         a = 0
     elif a < 0:
@@ -985,7 +1061,7 @@ def cy_cols(a): #50/50 chance to go forward or backward
         a = 0
     return a #"return" "a" means that you can say the function itself is equal to something, for example "variable = cy_cols(1)" has a chance to equal 0 or 2
 #and done, all is left are the tips, I tried to make the feel like something a pirate on the high seas might find, since this is Sus Bot Ocean Edition. Cya!
-#ps if you use the bucket fill tool, you can also use colorfilters with it to block its path.
+#ps if you use the bucket fill tool, you can also use colorfilters with it to black its path.
 chrono = """A final word:
  His name went unmentioned.
  Points, player...
