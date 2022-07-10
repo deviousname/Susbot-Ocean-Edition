@@ -228,15 +228,16 @@ class Sus_Bot(): #---------Sus_Bot---------
             if keyboard.is_pressed('f9'):
                 self.switch_off_on_rp_text()
             if keyboard.is_pressed('shift+q'):
-                x, y = self.get_coordinate()
+                try:
+                    x, y = self.get_coordinate()
+                except:
+                    pass
             x, y = fill_list.pop()
             if (col:=self.cache[x, y]) not in paintz or col in self.colorfilter:
                 pass
             elif paintz.index(col) == color:
                 pass
             else:
-                if keyboard.is_pressed('shift+q'):
-                    x, y = self.get_coordinate()
                 sio.emit('p',[x, y, (color := self.oceaneer()) if self.ocean_activated == True else (color := self.get_color_index()), 1])
                 fill_list.append([x+1, y])
                 fill_list.append([x-1, y])
@@ -244,18 +245,19 @@ class Sus_Bot(): #---------Sus_Bot---------
                 fill_list.append([x, y-1])
                 time.sleep(speed - (self.start - time.time()))
                 self.start = time.time()
-        if (r := random.random()) < .0042:
+        if (r := random.random()) < .01:
             random.shuffle(fill_list)
-        elif r > 1-.0042:
+        elif r > 1-.01:
             fill_list.reverse()
         if self.print_text == "on":
             print("It's empty now.")
             print('Refilling...')
 
-    def draw_bezier_line(self): #lute/banjo, pirate instrument
+    def draw_bezier_line(self): #lute/banjo/cannon, pirate instrument
         print('Charging cannon...')
         self.COLOR_VARIABLE = self.get_color_index()
-        notes = tuple(('do', 'doe', 're', 'ray', 'mi', 'me', 'fa', 'fah', 'sol', 'soul', 'la', 'la', 'si', 'see', 'ti'))
+        notes = tuple(('"Do"', '"Doe"', '"Re"', '"Ray"', '"Mi"', '"Me'', '"Fa"', '"Fah"',
+                       '"Sol"', '"Soul"', '"La"', '"La"', '"Si"', '"See"', '"Ti"'))
         print(random.choice(notes))
         def distance(x1, y1, x2, y2):
             return int(math.sqrt((x2 - x1)**2 + (y2 - y1)**2))
@@ -280,7 +282,7 @@ class Sus_Bot(): #---------Sus_Bot---------
                 control = [self.x, self.y]
                 print(random.choice(notes))
                 break
-        print('Fire !')
+        print('Fire!')
         points = []
 
         distance1 = distance(start[0],start[1], end[0],end[1])
