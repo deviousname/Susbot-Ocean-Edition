@@ -256,7 +256,7 @@ class Sus_Bot(): #---------Sus_Bot---------
     def draw_bezier_line(self): #lute/banjo/cannon, pirate instrument
         print('Charging cannon...')
         self.COLOR_VARIABLE = self.get_color_index()
-        notes = tuple(('"Do"', '"Doe"', '"Re"', '"Ray"', '"Mi"', '"Me'', '"Fa"', '"Fah"',
+        notes = tuple(('"Do"', '"Doe"', '"Re"', '"Ray"', '"Mi"', '"Me"', '"Fa"', '"Fah"',
                        '"Sol"', '"Soul"', '"La"', '"La"', '"Si"', '"See"', '"Ti"'))
         print(random.choice(notes))
         def distance(x1, y1, x2, y2):
