@@ -207,48 +207,48 @@ class Sus_Bot(): #---------Sus_Bot---------
     #fills an area with your selected color which ends when it fills
     # all areas within selected color + colorfilters + ocean/border color boundary
     def fill_tool(self): #works great
-        self.start = time.time()
+        
         self.get_coordinate()
         color = self.get_color_index()
+        
         fill_list = []
         fill_list.append([self.x, self.y])
-        self.start = time.time()
+        
         if self.print_text == "on":
             print('Emptying bucket of paint.')
+
+        self.start = time.time()
         while len(fill_list) > 0:
-            if keyboard.is_pressed(stop_key):
+            if keyboard.is_pressed('q'):
+                color = self.get_color_index()
+                self.get_coordinate()
+                x, y = self.x, self.y
+                self.ocean_activated = False
+            elif keyboard.is_pressed('e'):
+                self.get_coordinate()
+                x, y = self.x, self.y
+                self.ocean_activated = True
+            elif keyboard.is_pressed(stop_key):
                 break
-            if keyboard.is_pressed('s'): #this nested if statement switches the ocean brush on/off during fill use
-                if self.ocean_activated == False:
-                    self.ocean_activated = True
-                    print('Ocean mode...')
-                else:
-                    self.ocean_activated = False
-                    print('Color mode...')
-            if keyboard.is_pressed('f9'):
-                self.switch_off_on_rp_text()
-            if keyboard.is_pressed('shift+q'):
-                try:
-                    x, y = self.get_coordinate()
-                except:
-                    pass
+            
             x, y = fill_list.pop()
+            
             if (col:=self.cache[x, y]) not in paintz or col in self.colorfilter:
                 pass
             elif paintz.index(col) == color:
                 pass
             else:
-                sio.emit('p',[x, y, (color := self.oceaneer()) if self.ocean_activated == True else (color := self.get_color_index()), 1])
+                sio.emit('p',[x, y, self.oceaneer() if self.ocean_activated == True else color, 1])
                 fill_list.append([x+1, y])
                 fill_list.append([x-1, y])
                 fill_list.append([x, y+1])
                 fill_list.append([x, y-1])
                 time.sleep(speed - (self.start - time.time()))
-                self.start = time.time()
-        if (r := random.random()) < .01:
+            self.start = time.time()
+            
+        if random.random() > .8:
             random.shuffle(fill_list)
-        elif r > 1-.01:
-            fill_list.reverse()
+            
         if self.print_text == "on":
             print("It's empty now.")
             print('Refilling...')
