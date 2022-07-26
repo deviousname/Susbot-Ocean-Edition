@@ -729,7 +729,10 @@ class Sus_Bot(): #---------Sus_Bot---------
             print('W-what?')
             return
         sio.emit("p",[self.x, self.y, self.color, 1])
-        time.sleep(speed - (self.start - time.time()))
+	try:
+            time.sleep(speed - (self.start - time.time()))
+	except:
+	    pass
         self.start = time.time()#the idea is to start your timer as soon as the last sleep was finished and base your next sleeps duration off that
 
     def bound_check(self): #this checks if you are inside your region
