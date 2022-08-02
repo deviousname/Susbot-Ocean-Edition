@@ -2,6 +2,8 @@
 # Sus-stifying!
 # -------
     Written for Python 3.8.10 on Windows 10
+    
+# Tutorial for installing: https://www.youtube.com/watch?v=CVW3RJPLLvc
 # -------
     download and unzip susbot-ocean-edition
     open your command prompt
